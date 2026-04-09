@@ -45,8 +45,8 @@ created: 2026-04-10
 | 04-02-02 | 02 | 2 | EVID-03, SCOR-01 | T-04-04 | `unknown` 不当低分，scoring snapshot 必须暴露 `coverage` 与 `unknownCount` | unit | `npm run test:unit -- --run src/features/scoring/evidence-assessment.test.ts src/features/scoring/build-scoring-snapshot.test.ts` | `src/features/scoring/build-scoring-snapshot.test.ts` | pending |
 | 04-02-03 | 02 | 2 | SCOR-01 | T-04-05 | scoring route 可缓存并重算，且上游更新会清空旧 `run.scoring` | unit | `npm run test:unit -- --run src/features/analysis-run/repository.test.ts src/app/api/runs/[runId]/scoring/route.test.ts` | `src/app/api/runs/[runId]/scoring/route.test.ts` | pending |
 | 04-03-01 | 03 | 3 | SCOR-02 | T-04-06 | gap 必须持久化 benchmark provenance，benchmark 不足时返回 unknown | unit | `npm run test:unit -- --run src/features/scoring/build-gap-priorities.test.ts src/app/api/runs/[runId]/scoring/route.test.ts` | `src/features/scoring/build-gap-priorities.test.ts` | pending |
-| 04-03-02 | 03 | 3 | SCOR-01, SCOR-02 | T-04-07 | 解释面板必须可展开到 evidence contribution / `evidenceIds` / benchmark metadata | unit | `npm run test:unit -- --run src/components/workspace/scoring-panel.test.tsx` | `src/components/workspace/scoring-panel.test.tsx` | pending |
-| 04-03-03 | 03 | 3 | SCOR-01, SCOR-02 | T-04-08 | reopen 后必须恢复 persisted scoring 与 gaps，而不是前端临时状态 | e2e | `npm run test:e2e -- tests/e2e/scoring-gap-workflow.spec.ts` | `tests/e2e/scoring-gap-workflow.spec.ts` | pending |
+| 04-03-02 | 03 | 3 | SCOR-01, SCOR-02 | T-04-07 | 工作台必须在 Evidence 完成后触发 `POST /api/runs/[runId]/scoring`，并用持久化 `run.scoring` 刷新面板；解释面板可展开到 evidence contribution / `evidenceIds` / benchmark metadata | unit | `npm run test:unit -- --run src/components/workspace/run-shell.test.tsx src/components/workspace/scoring-panel.test.tsx` | `src/components/workspace/run-shell.test.tsx` | pending |
+| 04-03-03 | 03 | 3 | SCOR-01, SCOR-02 | T-04-08 | E2E 必须覆盖 Evidence 完成后生成评分、面板展示结果，以及 reopen 后恢复 persisted scoring 与 gaps，而不是前端临时状态 | e2e | `npm run test:e2e -- tests/e2e/scoring-gap-workflow.spec.ts` | `tests/e2e/scoring-gap-workflow.spec.ts` | pending |
 
 *Status: pending / green / red / flaky*
 
