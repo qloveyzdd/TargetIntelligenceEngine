@@ -5,6 +5,8 @@ import type {
   Dimension,
   Evidence,
   GoalCard,
+  SearchPlan,
+  SearchPlanItem,
   StageGoal
 } from "./types";
 
@@ -61,7 +63,8 @@ function toDimensions(value: unknown): Dimension[] {
       typeof dimension.direction === "string" &&
       typeof dimension.definition === "string" &&
       Array.isArray(dimension.evidenceNeeded) &&
-      typeof dimension.layer === "string"
+      typeof dimension.layer === "string" &&
+      typeof dimension.enabled === "boolean"
     );
   });
 }
@@ -85,6 +88,53 @@ function toCandidates(value: unknown): Candidate[] {
       Array.isArray(candidate.strengthDimensions)
     );
   });
+}
+
+function toSearchPlanItems(value: unknown): SearchPlanItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item): item is SearchPlanItem => {
+    if (!item || typeof item !== "object") {
+      return false;
+    }
+
+    const searchPlanItem = item as Record<string, unknown>;
+
+    return (
+      typeof searchPlanItem.id === "string" &&
+      typeof searchPlanItem.mode === "string" &&
+      (typeof searchPlanItem.dimensionId === "string" ||
+        searchPlanItem.dimensionId === null) &&
+      typeof searchPlanItem.query === "string" &&
+      typeof searchPlanItem.whatToFind === "string" &&
+      typeof searchPlanItem.whyThisSearch === "string" &&
+      typeof searchPlanItem.expectedCandidateCount === "number" &&
+      Array.isArray(searchPlanItem.sourceHints)
+    );
+  });
+}
+
+function toSearchPlan(value: unknown): SearchPlan | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const searchPlan = value as Record<string, unknown>;
+
+  if (
+    typeof searchPlan.status !== "string" ||
+    (searchPlan.confirmedAt !== null && typeof searchPlan.confirmedAt !== "string")
+  ) {
+    return null;
+  }
+
+  return {
+    status: searchPlan.status as SearchPlan["status"],
+    items: toSearchPlanItems(searchPlan.items),
+    confirmedAt: searchPlan.confirmedAt as SearchPlan["confirmedAt"]
+  };
 }
 
 function toEvidence(value: unknown): Evidence[] {
@@ -144,6 +194,7 @@ export function toAnalysisRun(row: AnalysisRunRow): AnalysisRun {
     inputNotes: row.inputNotes ?? null,
     goal: toGoalCard(row.goal),
     dimensions: toDimensions(row.dimensions),
+    searchPlan: toSearchPlan(row.searchPlan),
     candidates: toCandidates(row.candidates),
     evidence: toEvidence(row.evidence),
     stageGoals: toStageGoals(row.stageGoals),
@@ -165,6 +216,7 @@ export function createDraftRunAggregate(input: {
     inputNotes: input.inputNotes?.trim() || null,
     goal: null,
     dimensions: [],
+    searchPlan: null,
     candidates: [],
     evidence: [],
     stageGoals: [],

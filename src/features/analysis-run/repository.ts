@@ -72,6 +72,7 @@ function createDatabaseAnalysisRunStore(): AnalysisRunStore {
           inputNotes: run.inputNotes,
           goal: run.goal,
           dimensions: run.dimensions,
+          searchPlan: run.searchPlan,
           candidates: run.candidates,
           evidence: run.evidence,
           stageGoals: run.stageGoals,

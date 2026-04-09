@@ -14,6 +14,7 @@ describe("buildInitialDimensions", () => {
 
     expect(dimensions).toHaveLength(6);
     expect(dimensions.every((dimension) => dimension.layer === "core")).toBe(true);
+    expect(dimensions.every((dimension) => dimension.enabled)).toBe(true);
 
     const totalWeight = dimensions.reduce((sum, dimension) => sum + dimension.weight, 0);
 

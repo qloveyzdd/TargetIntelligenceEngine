@@ -5,8 +5,10 @@ import type { CSSProperties } from "react";
 import { useState } from "react";
 import type { AnalysisRun, Dimension } from "@/features/analysis-run/types";
 import { AnalysisPlaceholders } from "./analysis-placeholders";
+import { DimensionEditor } from "./dimension-editor";
 import { GoalCardEditor } from "./goal-card-editor";
 import { GoalInputForm } from "./goal-input-form";
+import { SearchPlanPanel } from "./search-plan-panel";
 
 type RunShellProps = {
   run?: AnalysisRun | null;
@@ -142,6 +144,46 @@ export function RunShell({ run = null }: RunShellProps) {
               : " | No supporting notes"}
           </p>
           <DimensionSummary dimensions={currentRun.dimensions} />
+        </section>
+      ) : null}
+
+      {currentRun ? (
+        <section style={styles.panel}>
+          <div style={styles.panelHeader}>
+            <div>
+              <p style={styles.sectionEyebrow}>Dimensions</p>
+              <h2 style={styles.sectionTitle}>Editable dimension draft</h2>
+            </div>
+            <span style={styles.panelMeta}>
+              {currentRun.status === "dimensions_ready"
+                ? "dimensions_ready"
+                : "draft editing"}
+            </span>
+          </div>
+          <DimensionEditor
+            key={`${currentRun.id}:${currentRun.updatedAt}:dimensions`}
+            run={currentRun}
+            onRunChanged={setCurrentRun}
+          />
+        </section>
+      ) : null}
+
+      {currentRun ? (
+        <section style={styles.panel}>
+          <div style={styles.panelHeader}>
+            <div>
+              <p style={styles.sectionEyebrow}>SearchPlan</p>
+              <h2 style={styles.sectionTitle}>Explainable search draft</h2>
+            </div>
+            <span style={styles.panelMeta}>
+              {currentRun.searchPlan?.status ?? "not generated"}
+            </span>
+          </div>
+          <SearchPlanPanel
+            key={`${currentRun.id}:${currentRun.updatedAt}:search-plan`}
+            run={currentRun}
+            onRunChanged={setCurrentRun}
+          />
         </section>
       ) : null}
 

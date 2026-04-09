@@ -20,6 +20,7 @@ export type Dimension = {
   definition: string;
   evidenceNeeded: string[];
   layer: DimensionLayer;
+  enabled: boolean;
 };
 
 export type Candidate = {
@@ -28,6 +29,27 @@ export type Candidate = {
   matchedModes: string[];
   officialUrl: string | null;
   strengthDimensions: string[];
+};
+
+export type SearchPlanMode = "same_goal" | "dimension_leader";
+
+export type SearchPlanItem = {
+  id: string;
+  mode: SearchPlanMode;
+  dimensionId: string | null;
+  query: string;
+  whatToFind: string;
+  whyThisSearch: string;
+  expectedCandidateCount: number;
+  sourceHints: string[];
+};
+
+export type SearchPlanStatus = "draft" | "confirmed";
+
+export type SearchPlan = {
+  status: SearchPlanStatus;
+  items: SearchPlanItem[];
+  confirmedAt: string | null;
 };
 
 export type Evidence = {
@@ -51,7 +73,13 @@ export type StageGoal = {
   risks: string[];
 };
 
-export type AnalysisRunStatus = "draft" | "goal_ready" | "goal_confirmed";
+export type AnalysisRunStatus =
+  | "draft"
+  | "goal_ready"
+  | "goal_confirmed"
+  | "dimensions_ready"
+  | "search_plan_ready"
+  | "search_plan_confirmed";
 
 export type AnalysisRun = {
   id: string;
@@ -60,6 +88,7 @@ export type AnalysisRun = {
   inputNotes: string | null;
   goal: GoalCard | null;
   dimensions: Dimension[];
+  searchPlan: SearchPlan | null;
   candidates: Candidate[];
   evidence: Evidence[];
   stageGoals: StageGoal[];
@@ -74,6 +103,7 @@ export type AnalysisRunUpdate = Partial<
     | "inputNotes"
     | "goal"
     | "dimensions"
+    | "searchPlan"
     | "candidates"
     | "evidence"
     | "stageGoals"

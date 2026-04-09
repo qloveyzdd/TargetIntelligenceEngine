@@ -1,4 +1,5 @@
 import { getRunById, updateRunAggregate } from "@/features/analysis-run/repository";
+import type { AnalysisRun } from "@/features/analysis-run/types";
 import { buildInitialDimensions } from "@/features/dimensions/build-initial-dimensions";
 import { coerceGoalCard } from "@/features/goal-card/schema";
 
@@ -9,10 +10,17 @@ type RouteContext = {
 };
 
 type UpdateRunRequest = {
-  status?: "draft" | "goal_ready" | "goal_confirmed";
+  status?: AnalysisRun["status"];
   inputNotes?: string | null;
   goal?: unknown;
 };
+
+function hasGoalChanged(
+  currentGoal: AnalysisRun["goal"],
+  nextGoal: AnalysisRun["goal"]
+) {
+  return JSON.stringify(currentGoal) !== JSON.stringify(nextGoal);
+}
 
 export async function GET(_request: Request, context: RouteContext) {
   const { runId } = await context.params;
@@ -48,20 +56,22 @@ export async function PATCH(request: Request, context: RouteContext) {
         { status: 400 }
       );
     }
+    const goalChanged = body.goal !== undefined && hasGoalChanged(currentRun.goal, nextGoal);
 
     const nextDimensions =
-      nextStatus === "goal_confirmed" &&
-      nextGoal &&
-      currentRun.dimensions.length === 0
+      nextStatus === "goal_confirmed" && nextGoal && (goalChanged || currentRun.dimensions.length === 0)
         ? buildInitialDimensions(nextGoal)
-        : currentRun.dimensions;
+        : goalChanged
+          ? []
+          : currentRun.dimensions;
 
     const run = await updateRunAggregate(runId, {
       goal: nextGoal,
       status: nextStatus,
       inputNotes:
         body.inputNotes === undefined ? currentRun.inputNotes : body.inputNotes ?? null,
-      dimensions: nextDimensions
+      dimensions: nextDimensions,
+      searchPlan: goalChanged ? null : currentRun.searchPlan
     });
 
     return Response.json({ run });

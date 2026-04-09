@@ -8,7 +8,8 @@ export const coreDimensions: Dimension[] = [
     direction: "lower_better",
     definition: "Total ownership cost, entry barrier, and scaling cost.",
     evidenceNeeded: ["pricing", "plan_limit", "deployment_cost"],
-    layer: "core"
+    layer: "core",
+    enabled: true
   },
   {
     id: "performance",
@@ -17,7 +18,8 @@ export const coreDimensions: Dimension[] = [
     direction: "higher_better",
     definition: "Latency, throughput, output quality, and operational speed.",
     evidenceNeeded: ["latency", "speed", "quality_signal"],
-    layer: "core"
+    layer: "core",
+    enabled: true
   },
   {
     id: "usability",
@@ -26,7 +28,8 @@ export const coreDimensions: Dimension[] = [
     direction: "higher_better",
     definition: "Onboarding clarity, task completion friction, and learning curve.",
     evidenceNeeded: ["onboarding", "ux_flow", "documentation"],
-    layer: "core"
+    layer: "core",
+    enabled: true
   },
   {
     id: "ecosystem",
@@ -35,7 +38,8 @@ export const coreDimensions: Dimension[] = [
     direction: "higher_better",
     definition: "Integrations, extension surface, and partner support.",
     evidenceNeeded: ["integrations", "api", "community"],
-    layer: "core"
+    layer: "core",
+    enabled: true
   },
   {
     id: "reliability",
@@ -44,7 +48,8 @@ export const coreDimensions: Dimension[] = [
     direction: "higher_better",
     definition: "Availability, operational stability, and recovery behavior.",
     evidenceNeeded: ["sla", "status", "incident_history"],
-    layer: "core"
+    layer: "core",
+    enabled: true
   },
   {
     id: "compliance",
@@ -53,6 +58,7 @@ export const coreDimensions: Dimension[] = [
     direction: "higher_better",
     definition: "Security posture, policy fit, regional limits, and governance.",
     evidenceNeeded: ["security", "compliance", "deployment_mode"],
-    layer: "core"
+    layer: "core",
+    enabled: true
   }
 ];

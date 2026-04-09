@@ -6,17 +6,17 @@ const sections = [
   {
     title: "Candidates",
     description:
-      "Phase 1 keeps the container stable. Same-goal and dimension-leader recall land in a later phase."
+      "Phase 2 now keeps SearchPlan visible. Real same-goal and dimension-leader recall still lands in the next phase."
   },
   {
     title: "Evidence",
     description:
-      "Evidence extraction is intentionally deferred until the public-source retrieval flow is ready."
+      "Evidence extraction remains deferred until candidate recall starts and the public-source retrieval flow is ready."
   },
   {
     title: "Stage Goals",
     description:
-      "Stage goals stay as a placeholder until the gap engine can produce evidence-backed milestones."
+      "Stage goals stay as a placeholder until scoring and the gap engine can produce evidence-backed milestones."
   }
 ];
 
@@ -27,7 +27,7 @@ export function AnalysisPlaceholders({
     <section style={styles.grid}>
       {sections.map((section) => (
         <article key={section.title} style={styles.card}>
-          <div style={styles.badge}>Phase 1 placeholder</div>
+          <div style={styles.badge}>Placeholder after SearchPlan</div>
           <h3 style={styles.cardTitle}>{section.title}</h3>
           <p style={styles.cardDescription}>{section.description}</p>
           <p style={styles.cardMeta}>Current run status: {statusLabel}</p>

@@ -4,6 +4,7 @@ import type {
   Candidate,
   Dimension,
   GoalCard,
+  SearchPlan,
   StageGoal,
   Evidence
 } from "@/features/analysis-run/types";
@@ -18,6 +19,7 @@ export const analysisRuns = pgTable("analysis_runs", {
     .$type<Dimension[]>()
     .notNull()
     .default(sql`'[]'::jsonb`),
+  searchPlan: jsonb("search_plan").$type<SearchPlan | null>(),
   candidates: jsonb("candidates")
     .$type<Candidate[]>()
     .notNull()

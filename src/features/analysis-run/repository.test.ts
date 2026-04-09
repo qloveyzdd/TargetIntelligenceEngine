@@ -20,6 +20,7 @@ describe("analysis run repository", () => {
     expect(run.status).toBe("draft");
     expect(run.goal).toBeNull();
     expect(run.dimensions).toEqual([]);
+    expect(run.searchPlan).toBeNull();
     expect(run.candidates).toEqual([]);
     expect(run.evidence).toEqual([]);
     expect(run.stageGoals).toEqual([]);
@@ -37,7 +38,6 @@ describe("analysis run repository", () => {
     await updateRunAggregate(
       run.id,
       {
-        status: "goal_ready",
         goal: {
           name: "Analysis Workspace",
           category: "AI Product Tool",
@@ -45,15 +45,59 @@ describe("analysis run repository", () => {
           hardConstraints: ["Open source"],
           softPreferences: ["Easy to use"],
           currentStage: "validation"
-        }
+        },
+        dimensions: [
+          {
+            id: "cost",
+            name: "Cost",
+            weight: 0.5,
+            direction: "lower_better",
+            definition: "Total ownership cost.",
+            evidenceNeeded: ["pricing"],
+            layer: "core",
+            enabled: true
+          },
+          {
+            id: "private-deployment",
+            name: "Private Deployment",
+            weight: 0.5,
+            direction: "higher_better",
+            definition: "How well the product supports self-hosted delivery.",
+            evidenceNeeded: ["deployment_mode"],
+            layer: "project",
+            enabled: false
+          }
+        ],
+        searchPlan: {
+          status: "confirmed",
+          items: [
+            {
+              id: "same-goal-1",
+              mode: "same_goal",
+              dimensionId: null,
+              query: "analysis workspace product strategy tool",
+              whatToFind: "Products solving the same planning workflow",
+              whyThisSearch: "Need direct comparables for the current goal",
+              expectedCandidateCount: 8,
+              sourceHints: ["official_site", "docs"]
+            }
+          ],
+          confirmedAt: "2026-04-10T00:00:00.000Z"
+        },
+        status: "search_plan_confirmed"
       },
       store
     );
 
     const updated = await getRunById(run.id, store);
 
-    expect(updated?.status).toBe("goal_ready");
+    expect(updated?.status).toBe("search_plan_confirmed");
     expect(updated?.goal?.name).toBe("Analysis Workspace");
     expect(updated?.goal?.currentStage).toBe("validation");
+    expect(updated?.dimensions).toHaveLength(2);
+    expect(updated?.dimensions[0]?.enabled).toBe(true);
+    expect(updated?.dimensions[1]?.layer).toBe("project");
+    expect(updated?.searchPlan?.items).toHaveLength(1);
+    expect(updated?.searchPlan?.status).toBe("confirmed");
   });
 });
