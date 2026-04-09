@@ -52,11 +52,12 @@ Plans:
 **Goal**: 从证据推出维度得分、overall score 和 gap priority  
 **Depends on**: Phase 3  
 **Requirements**: EVID-03, SCOR-01, SCOR-02  
-**Plans**: 2
+**Plans**: 3
 
 Plans:
-- [ ] 04-01: 实现维度评分、unknown 处理与 overall score
-- [ ] 04-02: 实现 gap priority 计算与解释接口
+- [ ] 04-01: 固化 run.scoring 契约与持久化 roundtrip
+- [ ] 04-02: 实现 evidence 稳定 ID、评分生成路由与失效链
+- [ ] 04-03: 实现 gap priority、解释面板与聚焦 E2E
 
 ### Phase 5: Visual Intelligence Surface
 **Goal**: 把分数与关系结果做成可钻取的可视化界面  
@@ -88,6 +89,6 @@ Plans:
 | 1. Foundation & Goal Backbone | 3/3 | Complete | 2026-04-10 |
 | 2. Dimension Engine & Search Planning | 3/3 | Complete | 2026-04-10 |
 | 3. Candidate Recall & Evidence Intake | 3/3 | Complete | 2026-04-10 |
-| 4. Explainable Scoring & Gap Engine | 0/2 | Not started | - |
+| 4. Explainable Scoring & Gap Engine | 0/3 | Not started | - |
 | 5. Visual Intelligence Surface | 0/3 | Not started | - |
 | 6. Stage Goals & GSD Handoff | 0/2 | Not started | - |
