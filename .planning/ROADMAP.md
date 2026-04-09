@@ -11,7 +11,7 @@
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Foundation & Goal Backbone** - 固定核心对象、输入模型与 GoalCard 流程 (completed 2026-04-10)
-- [ ] **Phase 2: Dimension Engine & Search Planning** - 建立三层维度引擎与双模式检索计划
+- [x] **Phase 2: Dimension Engine & Search Planning** - 建立三层维度引擎与双模式检索计划 (completed 2026-04-10)
 - [ ] **Phase 3: Candidate Recall & Evidence Intake** - 召回候选并建立证据链
 - [ ] **Phase 4: Explainable Scoring & Gap Engine** - 把证据转成可解释评分与差距优先级
 - [ ] **Phase 5: Visual Intelligence Surface** - 用雷达图和关系图做结果解释与钻取
@@ -45,9 +45,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: 实现三层维度合成与人工调权
-- [ ] 02-02: 实现双模式 SearchPlan 生成器
-- [ ] 02-03: 建立候选归一化、去重和排序输入接口
+- [x] 02-01: 实现三层维度合成与人工调权
+- [x] 02-02: 实现双模式 SearchPlan 生成器
+- [x] 02-03: 把维度编辑和 SearchPlan 草案接入工作台并补齐 E2E
 
 ### Phase 3: Candidate Recall & Evidence Intake
 **Goal**: 召回候选产品并把关键证据结构化保存
@@ -115,7 +115,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Goal Backbone | 3/3 | Complete    | 2026-04-10 |
-| 2. Dimension Engine & Search Planning | 0/3 | Not started | - |
+| 2. Dimension Engine & Search Planning | 3/3 | Complete | 2026-04-10 |
 | 3. Candidate Recall & Evidence Intake | 0/3 | Not started | - |
 | 4. Explainable Scoring & Gap Engine | 0/2 | Not started | - |
 | 5. Visual Intelligence Surface | 0/3 | Not started | - |

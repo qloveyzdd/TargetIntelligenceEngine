@@ -15,14 +15,14 @@
 ### Dimensions
 
 - [x] **DIME-01**: 系统可以输出通用层、领域层、项目层合并后的维度列表
-- [ ] **DIME-02**: 用户可以调整每个维度的权重
-- [ ] **DIME-03**: 用户可以查看并修改维度方向、定义和证据需求
-- [ ] **DIME-04**: 用户可以禁用与当前目标无关的维度
+- [x] **DIME-02**: 用户可以调整每个维度的权重
+- [x] **DIME-03**: 用户可以查看并修改维度方向、定义和证据需求
+- [x] **DIME-04**: 用户可以禁用与当前目标无关的维度
 
 ### Candidate Search
 
-- [ ] **SRCH-01**: 用户可以执行 `same_goal` 检索以寻找同目标候选产品
-- [ ] **SRCH-02**: 用户可以针对选中维度执行 `dimension_leader` 检索以寻找单点强者
+- [x] **SRCH-01**: 用户可以执行 `same_goal` 检索以寻找同目标候选产品
+- [x] **SRCH-02**: 用户可以针对选中维度执行 `dimension_leader` 检索以寻找单点强者
 - [ ] **SRCH-03**: 系统可以展示候选产品列表，并标明每个候选的 `matched_modes`
 - [ ] **SRCH-04**: 系统在 v1 中只对首轮排序前 5 个候选做深挖
 
@@ -86,11 +86,11 @@
 | GOAL-03 | Phase 1 | Complete |
 | GOAL-04 | Phase 1 | Complete |
 | DIME-01 | Phase 1 | Complete |
-| DIME-02 | Phase 2 | Pending |
-| DIME-03 | Phase 2 | Pending |
-| DIME-04 | Phase 2 | Pending |
-| SRCH-01 | Phase 2 | Pending |
-| SRCH-02 | Phase 2 | Pending |
+| DIME-02 | Phase 2 | Complete |
+| DIME-03 | Phase 2 | Complete |
+| DIME-04 | Phase 2 | Complete |
+| SRCH-01 | Phase 2 | Complete |
+| SRCH-02 | Phase 2 | Complete |
 | SRCH-03 | Phase 3 | Pending |
 | SRCH-04 | Phase 3 | Pending |
 | EVID-01 | Phase 3 | Pending |
@@ -111,4 +111,4 @@
 
 ---
 *Requirements defined: 2026-04-10*  
-*Last updated: 2026-04-10 after Phase 1 completion*
+*Last updated: 2026-04-10 after Phase 2 completion*
