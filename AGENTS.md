@@ -41,6 +41,8 @@ Target Intelligence Engine 是一个 evidence-first 的目标 intelligence engin
 - 缺证据返回 `unknown`，禁止把未知当低分。
 - 任何分数、关系和阶段目标都要能反查 `evidence_ids`。
 - MVP 先支持自然语言目标描述和补充文本，不提前接入 Git 工程和 URL 输入。
+- `.planning/` 是公开项目资产，默认纳入版本控制并随项目一起维护。
+- 在初始化完成、每个 phase 完成、每个 milestone 完成后，都需要推送到远端仓库。
 <!-- GSD:conventions-end -->
 
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->
@@ -68,6 +70,11 @@ Use these entry points:
 - `/gsd-execute-phase` for planned phase work
 
 Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
+
+For this project, push key project artifacts to the remote repository after:
+- initialization
+- each phase completion
+- each milestone completion
 <!-- GSD:workflow-end -->
 
 <!-- GSD:profile-start -->
