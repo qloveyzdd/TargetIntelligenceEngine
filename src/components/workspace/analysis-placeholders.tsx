@@ -4,19 +4,9 @@ type AnalysisPlaceholdersProps = {
 
 const sections = [
   {
-    title: "Candidates",
-    description:
-      "Phase 2 now keeps SearchPlan visible. Real same-goal and dimension-leader recall still lands in the next phase."
-  },
-  {
-    title: "Evidence",
-    description:
-      "Evidence extraction remains deferred until candidate recall starts and the public-source retrieval flow is ready."
-  },
-  {
     title: "Stage Goals",
     description:
-      "Stage goals stay as a placeholder until scoring and the gap engine can produce evidence-backed milestones."
+      "Stage goals stay as the remaining placeholder until scoring and the gap engine can produce evidence-backed milestones."
   }
 ];
 
@@ -27,7 +17,7 @@ export function AnalysisPlaceholders({
     <section style={styles.grid}>
       {sections.map((section) => (
         <article key={section.title} style={styles.card}>
-          <div style={styles.badge}>Placeholder after SearchPlan</div>
+          <div style={styles.badge}>Placeholder after Evidence</div>
           <h3 style={styles.cardTitle}>{section.title}</h3>
           <p style={styles.cardDescription}>{section.description}</p>
           <p style={styles.cardMeta}>Current run status: {statusLabel}</p>

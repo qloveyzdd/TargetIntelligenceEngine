@@ -84,14 +84,50 @@ describe("analysis run repository", () => {
           ],
           confirmedAt: "2026-04-10T00:00:00.000Z"
         },
-        status: "search_plan_confirmed"
+        candidates: [
+          {
+            id: "platform-openai-com-docs-api-reference-responses",
+            name: "OpenAI Responses",
+            matchedModes: ["same_goal", "dimension_leader"],
+            officialUrl: "https://platform.openai.com/docs/api-reference/responses",
+            strengthDimensions: ["performance", "cost"],
+            sources: [
+              {
+                sourceType: "official_site",
+                url: "https://platform.openai.com/docs/api-reference/responses"
+              },
+              {
+                sourceType: "docs",
+                url: "https://platform.openai.com/docs/guides/structured-outputs"
+              }
+            ],
+            matchedQueries: [
+              "analysis workspace product strategy tool",
+              "cost best ai planning tools"
+            ],
+            recallRank: 1
+          }
+        ],
+        evidence: [
+          {
+            candidateId: "platform-openai-com-docs-api-reference-responses",
+            dimensionId: "cost",
+            sourceType: "pricing",
+            url: "https://platform.openai.com/pricing",
+            excerpt: "Pricing starts with pay-as-you-go.",
+            extractedValue: "pay-as-you-go",
+            confidence: 0.82,
+            capturedAt: "2026-04-10T00:10:00.000Z"
+          }
+        ],
+        status: "evidence_ready"
       },
       store
     );
 
     const updated = await getRunById(run.id, store);
 
-    expect(updated?.status).toBe("search_plan_confirmed");
+    expect(updated?.status).toBe("evidence_ready");
     expect(updated?.goal?.name).toBe("Analysis Workspace");
     expect(updated?.goal?.currentStage).toBe("validation");
     expect(updated?.dimensions).toHaveLength(2);
@@ -99,5 +135,8 @@ describe("analysis run repository", () => {
     expect(updated?.dimensions[1]?.layer).toBe("project");
     expect(updated?.searchPlan?.items).toHaveLength(1);
     expect(updated?.searchPlan?.status).toBe("confirmed");
+    expect(updated?.candidates[0]?.matchedQueries).toHaveLength(2);
+    expect(updated?.candidates[0]?.sources[0]?.sourceType).toBe("official_site");
+    expect(updated?.evidence[0]?.sourceType).toBe("pricing");
   });
 });

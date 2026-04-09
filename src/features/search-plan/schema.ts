@@ -1,4 +1,9 @@
-import type { SearchPlan, SearchPlanItem, SearchPlanMode } from "@/features/analysis-run/types";
+import type {
+  SearchPlan,
+  SearchPlanItem,
+  SearchPlanMode,
+  SourceType
+} from "@/features/analysis-run/types";
 
 const modeValues = ["same_goal", "dimension_leader"] as const;
 const statusValues = ["draft", "confirmed"] as const;
@@ -94,6 +99,13 @@ function isMode(value: unknown): value is SearchPlanMode {
   return typeof value === "string" && modeValues.includes(value as SearchPlanMode);
 }
 
+function isSourceType(value: unknown): value is SourceType {
+  return (
+    typeof value === "string" &&
+    ["official_site", "docs", "pricing", "review"].includes(value)
+  );
+}
+
 function isStatus(value: unknown): value is SearchPlan["status"] {
   return typeof value === "string" && statusValues.includes(value as SearchPlan["status"]);
 }
@@ -122,7 +134,8 @@ export function coerceSearchPlanItem(value: unknown): SearchPlanItem | null {
     !whyThisSearch ||
     !Number.isFinite(expectedCandidateCount) ||
     expectedCandidateCount <= 0 ||
-    sourceHints.length === 0
+    sourceHints.length === 0 ||
+    !sourceHints.every((item) => isSourceType(item))
   ) {
     return null;
   }
@@ -139,7 +152,7 @@ export function coerceSearchPlanItem(value: unknown): SearchPlanItem | null {
     whatToFind,
     whyThisSearch,
     expectedCandidateCount,
-    sourceHints
+    sourceHints: sourceHints as SourceType[]
   };
 }
 

@@ -5,7 +5,9 @@ import type { CSSProperties } from "react";
 import { useState } from "react";
 import type { AnalysisRun, Dimension } from "@/features/analysis-run/types";
 import { AnalysisPlaceholders } from "./analysis-placeholders";
+import { CandidatesPanel } from "./candidates-panel";
 import { DimensionEditor } from "./dimension-editor";
+import { EvidencePanel } from "./evidence-panel";
 import { GoalCardEditor } from "./goal-card-editor";
 import { GoalInputForm } from "./goal-input-form";
 import { SearchPlanPanel } from "./search-plan-panel";
@@ -32,7 +34,7 @@ function DimensionSummary({ dimensions }: DimensionSummaryProps) {
       <div style={styles.panelHeader}>
         <div>
           <p style={styles.sectionEyebrow}>Dimensions</p>
-          <h3 style={styles.dimensionTitle}>Initial core dimensions</h3>
+          <h3 style={styles.dimensionTitle}>Current dimensions</h3>
         </div>
         <span style={styles.panelMeta}>{dimensions.length} items</span>
       </div>
@@ -62,7 +64,7 @@ export function RunShell({ run = null }: RunShellProps) {
     <div style={styles.page}>
       <section style={styles.hero}>
         <div>
-          <p style={styles.eyebrow}>Phase 1 Workspace</p>
+          <p style={styles.eyebrow}>Analysis Workspace</p>
           <h1 style={styles.title}>Target Intelligence Engine</h1>
           <p style={styles.subtitle}>
             Start with a stable analysis container, then add GoalCard, dimensions,
@@ -181,6 +183,44 @@ export function RunShell({ run = null }: RunShellProps) {
           </div>
           <SearchPlanPanel
             key={`${currentRun.id}:${currentRun.updatedAt}:search-plan`}
+            run={currentRun}
+            onRunChanged={setCurrentRun}
+          />
+        </section>
+      ) : null}
+
+      {currentRun ? (
+        <section style={styles.panel}>
+          <div style={styles.panelHeader}>
+            <div>
+              <p style={styles.sectionEyebrow}>Candidates</p>
+              <h2 style={styles.sectionTitle}>Candidate recall</h2>
+            </div>
+            <span style={styles.panelMeta}>
+              {currentRun.candidates.length > 0 ? `${currentRun.candidates.length} candidates` : "not generated"}
+            </span>
+          </div>
+          <CandidatesPanel
+            key={`${currentRun.id}:${currentRun.updatedAt}:candidates`}
+            run={currentRun}
+            onRunChanged={setCurrentRun}
+          />
+        </section>
+      ) : null}
+
+      {currentRun ? (
+        <section style={styles.panel}>
+          <div style={styles.panelHeader}>
+            <div>
+              <p style={styles.sectionEyebrow}>Evidence</p>
+              <h2 style={styles.sectionTitle}>Evidence intake</h2>
+            </div>
+            <span style={styles.panelMeta}>
+              {currentRun.evidence.length > 0 ? `${currentRun.evidence.length} records` : "not generated"}
+            </span>
+          </div>
+          <EvidencePanel
+            key={`${currentRun.id}:${currentRun.updatedAt}:evidence`}
             run={currentRun}
             onRunChanged={setCurrentRun}
           />

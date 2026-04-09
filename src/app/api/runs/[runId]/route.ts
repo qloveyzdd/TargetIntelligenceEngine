@@ -22,6 +22,14 @@ function hasGoalChanged(
   return JSON.stringify(currentGoal) !== JSON.stringify(nextGoal);
 }
 
+function clearDownstreamArtifacts() {
+  return {
+    searchPlan: null,
+    candidates: [],
+    evidence: []
+  } satisfies Pick<AnalysisRun, "searchPlan" | "candidates" | "evidence">;
+}
+
 export async function GET(_request: Request, context: RouteContext) {
   const { runId } = await context.params;
   const run = await getRunById(runId);
@@ -71,7 +79,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       inputNotes:
         body.inputNotes === undefined ? currentRun.inputNotes : body.inputNotes ?? null,
       dimensions: nextDimensions,
-      searchPlan: goalChanged ? null : currentRun.searchPlan
+      ...(goalChanged ? clearDownstreamArtifacts() : { searchPlan: currentRun.searchPlan })
     });
 
     return Response.json({ run });

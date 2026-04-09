@@ -126,7 +126,36 @@ describe("dimensions route", () => {
           }
         ],
         confirmedAt: "2026-04-10T00:00:00.000Z"
-      }
+      },
+      candidates: [
+        {
+          id: "productboard-com",
+          name: "Productboard",
+          matchedModes: ["same_goal"],
+          officialUrl: "https://www.productboard.com",
+          strengthDimensions: ["usability"],
+          sources: [
+            {
+              sourceType: "official_site",
+              url: "https://www.productboard.com"
+            }
+          ],
+          matchedQueries: ["ai product tool alternatives"],
+          recallRank: 1
+        }
+      ],
+      evidence: [
+        {
+          candidateId: "productboard-com",
+          dimensionId: "usability",
+          sourceType: "official_site",
+          url: "https://www.productboard.com",
+          excerpt: "Designed to align teams.",
+          extractedValue: "alignment workflow",
+          confidence: 0.8,
+          capturedAt: "2026-04-10T00:00:00.000Z"
+        }
+      ]
     });
 
     const response = await PATCH(
@@ -154,11 +183,15 @@ describe("dimensions route", () => {
       run?: {
         status: string;
         searchPlan: unknown;
+        candidates: unknown[];
+        evidence: unknown[];
       };
     };
 
     expect(response.status).toBe(200);
     expect(payload.run?.status).toBe("dimensions_ready");
     expect(payload.run?.searchPlan).toBeNull();
+    expect(payload.run?.candidates).toEqual([]);
+    expect(payload.run?.evidence).toEqual([]);
   });
 });

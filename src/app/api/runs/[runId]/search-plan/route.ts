@@ -21,7 +21,9 @@ function canGenerateSearchPlan(status: string) {
   return (
     status === "dimensions_ready" ||
     status === "search_plan_ready" ||
-    status === "search_plan_confirmed"
+    status === "search_plan_confirmed" ||
+    status === "candidates_ready" ||
+    status === "evidence_ready"
   );
 }
 
@@ -67,7 +69,9 @@ export async function POST(request: Request, context: RouteContext) {
       status: "draft",
       items,
       confirmedAt: null
-    }
+    },
+    candidates: [],
+    evidence: []
   });
 
   return Response.json({ run: nextRun });
@@ -95,7 +99,9 @@ export async function PATCH(request: Request, context: RouteContext) {
         ...searchPlan,
         status: "confirmed",
         confirmedAt: new Date().toISOString()
-      }
+      },
+      candidates: [],
+      evidence: []
     });
 
     return Response.json({ run: nextRun });

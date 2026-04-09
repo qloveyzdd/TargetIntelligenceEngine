@@ -1,4 +1,4 @@
-import type { SearchPlanItem } from "@/features/analysis-run/types";
+import type { SearchPlanItem, SourceType } from "@/features/analysis-run/types";
 import { getOpenAIClient } from "@/lib/openai";
 import { coerceSearchPlanDraftPayload, searchPlanDraftSchema } from "./schema";
 import type { SearchPlanInput } from "./build-search-plan-input";
@@ -11,7 +11,7 @@ function normalizeId(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function buildSourceHints(dimensionId: string | null) {
+function buildSourceHints(dimensionId: string | null): SourceType[] {
   if (dimensionId === "cost") {
     return ["official_site", "pricing", "review"];
   }
@@ -32,7 +32,7 @@ function buildMockItems(input: SearchPlanInput): SearchPlanItem[] {
     whatToFind: "Products solving the same core goal with a similar product shape.",
     whyThisSearch: "Need direct comparables before evaluating dimension leaders.",
     expectedCandidateCount: 8 - index * 2,
-    sourceHints: ["official_site", "docs", "review"]
+    sourceHints: ["official_site", "docs", "review"] as SourceType[]
   }));
 
   const leaderItems = input.enabledDimensions.map((dimension) => ({

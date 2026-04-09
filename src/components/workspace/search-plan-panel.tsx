@@ -66,7 +66,13 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
     });
   }
 
-  if (run.status !== "dimensions_ready" && run.status !== "search_plan_ready" && run.status !== "search_plan_confirmed") {
+  if (
+    run.status !== "dimensions_ready" &&
+    run.status !== "search_plan_ready" &&
+    run.status !== "search_plan_confirmed" &&
+    run.status !== "candidates_ready" &&
+    run.status !== "evidence_ready"
+  ) {
     return (
       <p style={styles.waiting}>
         SearchPlan stays locked until the dimension draft is saved as `dimensions_ready`.

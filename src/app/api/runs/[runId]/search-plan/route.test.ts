@@ -179,4 +179,109 @@ describe("search plan route", () => {
     expect(payload.run?.searchPlan?.status).toBe("confirmed");
     expect(payload.run?.searchPlan?.confirmedAt).not.toBeNull();
   });
+
+  it("clears stale candidates and evidence when confirming a search plan again", async () => {
+    const goal = {
+      name: "Target Intelligence Engine",
+      category: "AI Product Tool",
+      jobToBeDone: "Turn product goals into an explainable analysis workspace.",
+      hardConstraints: ["Open source"],
+      softPreferences: ["Explainable results"],
+      currentStage: "validation" as const
+    };
+    const run = await createDraftRun({
+      inputText: goal.jobToBeDone
+    });
+
+    await updateRunAggregate(run.id, {
+      goal,
+      status: "candidates_ready",
+      dimensions: buildInitialDimensions(goal),
+      searchPlan: {
+        status: "draft",
+        items: [
+          {
+            id: "same-goal-1",
+            mode: "same_goal",
+            dimensionId: null,
+            query: "ai product tool alternatives",
+            whatToFind: "Products solving the same goal",
+            whyThisSearch: "Need direct comparables",
+            expectedCandidateCount: 8,
+            sourceHints: ["official_site", "docs"]
+          }
+        ],
+        confirmedAt: null
+      },
+      candidates: [
+        {
+          id: "productboard-com",
+          name: "Productboard",
+          matchedModes: ["same_goal"],
+          officialUrl: "https://www.productboard.com",
+          strengthDimensions: ["usability"],
+          sources: [
+            {
+              sourceType: "official_site",
+              url: "https://www.productboard.com"
+            }
+          ],
+          matchedQueries: ["ai product tool alternatives"],
+          recallRank: 1
+        }
+      ],
+      evidence: [
+        {
+          candidateId: "productboard-com",
+          dimensionId: "usability",
+          sourceType: "official_site",
+          url: "https://www.productboard.com",
+          excerpt: "Designed to align teams.",
+          extractedValue: "alignment workflow",
+          confidence: 0.8,
+          capturedAt: "2026-04-10T00:00:00.000Z"
+        }
+      ]
+    });
+
+    const response = await PATCH(
+      new Request("http://localhost/api/runs/test/search-plan", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          searchPlan: {
+            status: "draft",
+            items: [
+              {
+                id: "same-goal-1",
+                mode: "same_goal",
+                dimensionId: null,
+                query: "ai product tool alternatives",
+                whatToFind: "Products solving the same goal",
+                whyThisSearch: "Need direct comparables",
+                expectedCandidateCount: 8,
+                sourceHints: ["official_site", "docs"]
+              }
+            ],
+            confirmedAt: null
+          }
+        })
+      }),
+      {
+        params: Promise.resolve({ runId: run.id })
+      }
+    );
+    const payload = (await response.json()) as {
+      run?: {
+        candidates: unknown[];
+        evidence: unknown[];
+      };
+    };
+
+    expect(response.status).toBe(200);
+    expect(payload.run?.candidates).toEqual([]);
+    expect(payload.run?.evidence).toEqual([]);
+  });
 });

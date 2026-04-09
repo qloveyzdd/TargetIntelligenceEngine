@@ -24,7 +24,9 @@ function canGenerateDimensions(status: string) {
     status === "goal_confirmed" ||
     status === "dimensions_ready" ||
     status === "search_plan_ready" ||
-    status === "search_plan_confirmed"
+    status === "search_plan_confirmed" ||
+    status === "candidates_ready" ||
+    status === "evidence_ready"
   );
 }
 
@@ -64,6 +66,8 @@ export async function POST(request: Request, context: RouteContext) {
   const nextRun = await updateRunAggregate(runId, {
     dimensions,
     searchPlan: null,
+    candidates: [],
+    evidence: [],
     status: "goal_confirmed"
   });
 
@@ -89,6 +93,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     const nextRun = await updateRunAggregate(runId, {
       dimensions: normalizeDimensionWeights(dimensions),
       searchPlan: null,
+      candidates: [],
+      evidence: [],
       status: "dimensions_ready"
     });
 

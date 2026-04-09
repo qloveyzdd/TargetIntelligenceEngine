@@ -2,6 +2,7 @@ import type { AnalysisRunRow } from "@/db/schema";
 import type {
   AnalysisRun,
   Candidate,
+  CandidateSource,
   Dimension,
   Evidence,
   GoalCard,
@@ -69,6 +70,22 @@ function toDimensions(value: unknown): Dimension[] {
   });
 }
 
+function toCandidateSources(value: unknown): CandidateSource[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item): item is CandidateSource => {
+    if (!item || typeof item !== "object") {
+      return false;
+    }
+
+    const source = item as Record<string, unknown>;
+
+    return typeof source.sourceType === "string" && typeof source.url === "string";
+  });
+}
+
 function toCandidates(value: unknown): Candidate[] {
   if (!Array.isArray(value)) {
     return [];
@@ -80,12 +97,22 @@ function toCandidates(value: unknown): Candidate[] {
     }
 
     const candidate = item as Record<string, unknown>;
+    const matchedModes = toStringArray(candidate.matchedModes);
+    const strengthDimensions = toStringArray(candidate.strengthDimensions);
+    const matchedQueries = toStringArray(candidate.matchedQueries);
+    const sources = toCandidateSources(candidate.sources);
 
     return (
       typeof candidate.id === "string" &&
       typeof candidate.name === "string" &&
-      Array.isArray(candidate.matchedModes) &&
-      Array.isArray(candidate.strengthDimensions)
+      matchedModes.length === (Array.isArray(candidate.matchedModes) ? candidate.matchedModes.length : -1) &&
+      strengthDimensions.length ===
+        (Array.isArray(candidate.strengthDimensions) ? candidate.strengthDimensions.length : -1) &&
+      matchedQueries.length ===
+        (Array.isArray(candidate.matchedQueries) ? candidate.matchedQueries.length : -1) &&
+      sources.length === (Array.isArray(candidate.sources) ? candidate.sources.length : -1) &&
+      typeof candidate.recallRank === "number" &&
+      (typeof candidate.officialUrl === "string" || candidate.officialUrl === null)
     );
   });
 }

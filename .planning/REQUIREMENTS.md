@@ -1,7 +1,7 @@
 # Requirements: Target Intelligence Engine
 
 **Defined:** 2026-04-10  
-**Core Value:** 让目标拆解、竞品映射和阶段规划建立在可追溯证据上，而不是模型主观判断
+**Core Value:** 让目标拆解、竞品映射和阶段规划建立在可追溯证据上，而不是模型主观判断。
 
 ## v1 Requirements
 
@@ -9,7 +9,7 @@
 
 - [x] **GOAL-01**: 用户可以输入一句自然语言目标描述发起分析
 - [x] **GOAL-02**: 用户可以补充额外上下文文本，例如约束、偏好和当前阶段
-- [x] **GOAL-03**: 系统可以把输入整理成结构化 GoalCard，至少包含名称、类别、JTBD、硬约束、软偏好、当前阶段
+- [x] **GOAL-03**: 系统可以把输入整理成结构化 GoalCard，至少包含名称、类别、JTBD、硬约束、软偏好和当前阶段
 - [x] **GOAL-04**: 用户可以在执行检索前查看并修改 GoalCard
 
 ### Dimensions
@@ -23,13 +23,13 @@
 
 - [x] **SRCH-01**: 用户可以执行 `same_goal` 检索以寻找同目标候选产品
 - [x] **SRCH-02**: 用户可以针对选中维度执行 `dimension_leader` 检索以寻找单点强者
-- [ ] **SRCH-03**: 系统可以展示候选产品列表，并标明每个候选的 `matched_modes`
-- [ ] **SRCH-04**: 系统在 v1 中只对首轮排序前 5 个候选做深挖
+- [x] **SRCH-03**: 系统可以展示候选产品列表，并标明每个候选的 `matched_modes`
+- [x] **SRCH-04**: 系统在 v1 中只对首轮排序前 5 个候选做深挖
 
 ### Evidence
 
-- [ ] **EVID-01**: 用户可以查看某个候选在某个维度下的证据列表
-- [ ] **EVID-02**: 每条证据至少包含 `source_type`、`url`、`excerpt`、`extracted_value`、`confidence`、`captured_at`
+- [x] **EVID-01**: 用户可以查看某个候选在某个维度下的证据列表
+- [x] **EVID-02**: 每条证据至少包含 `source_type`、`url`、`excerpt`、`extracted_value`、`confidence`、`captured_at`
 - [ ] **EVID-03**: 当某个维度证据不足时，系统显示 `unknown` 而不是低分
 
 ### Scoring
@@ -91,10 +91,10 @@
 | DIME-04 | Phase 2 | Complete |
 | SRCH-01 | Phase 2 | Complete |
 | SRCH-02 | Phase 2 | Complete |
-| SRCH-03 | Phase 3 | Pending |
-| SRCH-04 | Phase 3 | Pending |
-| EVID-01 | Phase 3 | Pending |
-| EVID-02 | Phase 3 | Pending |
+| SRCH-03 | Phase 3 | Complete |
+| SRCH-04 | Phase 3 | Complete |
+| EVID-01 | Phase 3 | Complete |
+| EVID-02 | Phase 3 | Complete |
 | EVID-03 | Phase 4 | Pending |
 | SCOR-01 | Phase 4 | Pending |
 | SCOR-02 | Phase 4 | Pending |
@@ -111,4 +111,4 @@
 
 ---
 *Requirements defined: 2026-04-10*  
-*Last updated: 2026-04-10 after Phase 2 completion*
+*Last updated: 2026-04-10 after Phase 3 completion*

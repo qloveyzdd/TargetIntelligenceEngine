@@ -11,6 +11,7 @@ export type GoalCard = {
 
 export type DimensionDirection = "higher_better" | "lower_better";
 export type DimensionLayer = "core" | "domain" | "project";
+export type SourceType = "official_site" | "docs" | "pricing" | "review";
 
 export type Dimension = {
   id: string;
@@ -23,15 +24,23 @@ export type Dimension = {
   enabled: boolean;
 };
 
+export type SearchPlanMode = "same_goal" | "dimension_leader";
+
+export type CandidateSource = {
+  sourceType: SourceType;
+  url: string;
+};
+
 export type Candidate = {
   id: string;
   name: string;
-  matchedModes: string[];
+  matchedModes: SearchPlanMode[];
   officialUrl: string | null;
   strengthDimensions: string[];
+  sources: CandidateSource[];
+  matchedQueries: string[];
+  recallRank: number;
 };
-
-export type SearchPlanMode = "same_goal" | "dimension_leader";
 
 export type SearchPlanItem = {
   id: string;
@@ -41,7 +50,7 @@ export type SearchPlanItem = {
   whatToFind: string;
   whyThisSearch: string;
   expectedCandidateCount: number;
-  sourceHints: string[];
+  sourceHints: SourceType[];
 };
 
 export type SearchPlanStatus = "draft" | "confirmed";
@@ -55,7 +64,7 @@ export type SearchPlan = {
 export type Evidence = {
   candidateId: string;
   dimensionId: string;
-  sourceType: string;
+  sourceType: SourceType;
   url: string;
   excerpt: string;
   extractedValue: string;
@@ -79,7 +88,9 @@ export type AnalysisRunStatus =
   | "goal_confirmed"
   | "dimensions_ready"
   | "search_plan_ready"
-  | "search_plan_confirmed";
+  | "search_plan_confirmed"
+  | "candidates_ready"
+  | "evidence_ready";
 
 export type AnalysisRun = {
   id: string;
