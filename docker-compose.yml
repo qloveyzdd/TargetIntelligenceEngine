@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: target-intelligence-engine-postgres
+    environment:
+      POSTGRES_DB: target_intelligence_engine
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - target-intelligence-engine-postgres:/var/lib/postgresql/data
+
+volumes:
+  target-intelligence-engine-postgres:
