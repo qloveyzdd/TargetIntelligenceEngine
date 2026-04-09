@@ -1,4 +1,5 @@
 import type { Evidence, SourceType } from "@/features/analysis-run/types";
+import { assignEvidenceId } from "./assign-evidence-id";
 
 const sourceTypeValues = ["official_site", "docs", "pricing", "review"] as const;
 
@@ -93,6 +94,17 @@ export function coerceEvidenceRecord(value: unknown): Evidence | null {
   }
 
   return {
+    id:
+      typeof raw.id === "string" && raw.id.trim()
+        ? raw.id.trim()
+        : assignEvidenceId({
+            candidateId,
+            dimensionId,
+            sourceType: raw.sourceType,
+            url,
+            excerpt,
+            extractedValue
+          }),
     candidateId,
     dimensionId,
     sourceType: raw.sourceType,

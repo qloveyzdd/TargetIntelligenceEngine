@@ -9,7 +9,7 @@ This roadmap starts from the data backbone instead of the visual layer. We first
 - [x] **Phase 1: Foundation & Goal Backbone** - 固定核心对象、GoalCard 输入与 run 容器 (completed 2026-04-10)
 - [x] **Phase 2: Dimension Engine & Search Planning** - 建立三层维度引擎与双模式 SearchPlan (completed 2026-04-10)
 - [x] **Phase 3: Candidate Recall & Evidence Intake** - 召回候选产品并沉淀结构化证据 (completed 2026-04-10)
-- [ ] **Phase 4: Explainable Scoring & Gap Engine** - 从证据推导维度分数、总体分数与 gap priority
+- [x] **Phase 4: Explainable Scoring & Gap Engine** - 从证据推导维度分数、总体分数与 gap priority (completed 2026-04-10)
 - [ ] **Phase 5: Visual Intelligence Surface** - 用雷达图和关系图展示结果并支持钻取
 - [ ] **Phase 6: Stage Goals & GSD Handoff** - 输出阶段目标并生成可供 GSD 使用的结构化结果
 
@@ -55,9 +55,9 @@ Plans:
 **Plans**: 3
 
 Plans:
-- [ ] 04-01: 固化 run.scoring 契约与持久化 roundtrip
-- [ ] 04-02: 实现 evidence 稳定 ID、评分生成路由与失效链
-- [ ] 04-03: 实现 gap priority、解释面板与聚焦 E2E
+- [x] 04-01: 固化 run.scoring 契约与持久化 roundtrip
+- [x] 04-02: 实现 evidence 稳定 ID、评分生成路由与失效链
+- [x] 04-03: 实现 gap priority、解释面板与聚焦 E2E
 
 ### Phase 5: Visual Intelligence Surface
 **Goal**: 把分数与关系结果做成可钻取的可视化界面  
@@ -89,6 +89,6 @@ Plans:
 | 1. Foundation & Goal Backbone | 3/3 | Complete | 2026-04-10 |
 | 2. Dimension Engine & Search Planning | 3/3 | Complete | 2026-04-10 |
 | 3. Candidate Recall & Evidence Intake | 3/3 | Complete | 2026-04-10 |
-| 4. Explainable Scoring & Gap Engine | 0/3 | Not started | - |
+| 4. Explainable Scoring & Gap Engine | 3/3 | Complete | 2026-04-10 |
 | 5. Visual Intelligence Surface | 0/3 | Not started | - |
 | 6. Stage Goals & GSD Handoff | 0/2 | Not started | - |

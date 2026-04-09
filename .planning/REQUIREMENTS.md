@@ -30,12 +30,12 @@
 
 - [x] **EVID-01**: 用户可以查看某个候选在某个维度下的证据列表
 - [x] **EVID-02**: 每条证据至少包含 `source_type`、`url`、`excerpt`、`extracted_value`、`confidence`、`captured_at`
-- [ ] **EVID-03**: 当某个维度证据不足时，系统显示 `unknown` 而不是低分
+- [x] **EVID-03**: 当某个维度证据不足时，系统显示 `unknown` 而不是低分
 
 ### Scoring
 
-- [ ] **SCOR-01**: 用户可以查看维度得分及其证据贡献拆解
-- [ ] **SCOR-02**: 用户可以查看整体分数与 `gap_priority` 结果
+- [x] **SCOR-01**: 用户可以查看维度得分及其证据贡献拆解
+- [x] **SCOR-02**: 用户可以查看整体分数与 `gap_priority` 结果
 
 ### Visualization
 
@@ -95,9 +95,9 @@
 | SRCH-04 | Phase 3 | Complete |
 | EVID-01 | Phase 3 | Complete |
 | EVID-02 | Phase 3 | Complete |
-| EVID-03 | Phase 4 | Pending |
-| SCOR-01 | Phase 4 | Pending |
-| SCOR-02 | Phase 4 | Pending |
+| EVID-03 | Phase 4 | Complete |
+| SCOR-01 | Phase 4 | Complete |
+| SCOR-02 | Phase 4 | Complete |
 | VIZ-01 | Phase 5 | Pending |
 | VIZ-02 | Phase 5 | Pending |
 | STAG-01 | Phase 6 | Pending |
@@ -111,4 +111,4 @@
 
 ---
 *Requirements defined: 2026-04-10*  
-*Last updated: 2026-04-10 after Phase 3 completion*
+*Last updated: 2026-04-10 after Phase 4 completion*

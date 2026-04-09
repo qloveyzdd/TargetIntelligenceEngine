@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import type {
+  AnalysisRunScoring,
   Candidate,
   Dimension,
   GoalCard,
@@ -28,6 +29,7 @@ export const analysisRuns = pgTable("analysis_runs", {
     .$type<Evidence[]>()
     .notNull()
     .default(sql`'[]'::jsonb`),
+  scoring: jsonb("scoring").$type<AnalysisRunScoring | null>(),
   stageGoals: jsonb("stage_goals")
     .$type<StageGoal[]>()
     .notNull()

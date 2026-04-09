@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import type { AnalysisRun, Dimension } from "@/features/analysis-run/types";
 import { AnalysisPlaceholders } from "./analysis-placeholders";
 import { CandidatesPanel } from "./candidates-panel";
@@ -10,6 +10,7 @@ import { DimensionEditor } from "./dimension-editor";
 import { EvidencePanel } from "./evidence-panel";
 import { GoalCardEditor } from "./goal-card-editor";
 import { GoalInputForm } from "./goal-input-form";
+import { ScoringPanel } from "./scoring-panel";
 import { SearchPlanPanel } from "./search-plan-panel";
 
 type RunShellProps = {
@@ -57,8 +58,67 @@ function DimensionSummary({ dimensions }: DimensionSummaryProps) {
   );
 }
 
+type RequestRunScoringInput = {
+  runId: string;
+  forceRegenerate?: boolean;
+  fetchImpl?: typeof fetch;
+};
+
+export async function requestRunScoring({
+  runId,
+  forceRegenerate = false,
+  fetchImpl = fetch
+}: RequestRunScoringInput) {
+  const response = await fetchImpl(`/api/runs/${runId}/scoring`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      forceRegenerate
+    })
+  });
+  const payload = (await response.json()) as {
+    error?: string;
+    run?: AnalysisRun;
+  };
+
+  if (!response.ok || !payload.run) {
+    throw new Error(payload.error ?? "Failed to generate scoring.");
+  }
+
+  return payload.run;
+}
+
 export function RunShell({ run = null }: RunShellProps) {
   const [currentRun, setCurrentRun] = useState<AnalysisRun | null>(run);
+  const [scoringError, setScoringError] = useState<string | null>(null);
+  const [isScoringPending, startScoringTransition] = useTransition();
+
+  function handleGenerateScoring(forceRegenerate = false) {
+    if (!currentRun) {
+      return;
+    }
+
+    setScoringError(null);
+
+    startScoringTransition(() => {
+      void (async () => {
+        try {
+          const nextRun = await requestRunScoring({
+            runId: currentRun.id,
+            forceRegenerate
+          });
+
+          setCurrentRun(nextRun);
+        } catch (error) {
+          setScoringError(
+            error instanceof Error ? error.message : "Failed to generate scoring."
+          );
+        }
+      })();
+    });
+  }
 
   return (
     <div style={styles.page}>
@@ -223,6 +283,26 @@ export function RunShell({ run = null }: RunShellProps) {
             key={`${currentRun.id}:${currentRun.updatedAt}:evidence`}
             run={currentRun}
             onRunChanged={setCurrentRun}
+          />
+        </section>
+      ) : null}
+
+      {currentRun ? (
+        <section style={styles.panel}>
+          <div style={styles.panelHeader}>
+            <div>
+              <p style={styles.sectionEyebrow}>Scoring</p>
+              <h2 style={styles.sectionTitle}>Explainable scoring and gaps</h2>
+            </div>
+            <span style={styles.panelMeta}>
+              {currentRun.scoring ? "scoring ready" : "not generated"}
+            </span>
+          </div>
+          <ScoringPanel
+            run={currentRun}
+            isPending={isScoringPending}
+            error={scoringError}
+            onGenerate={handleGenerateScoring}
           />
         </section>
       ) : null}

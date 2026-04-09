@@ -19,6 +19,46 @@ function cloneRun<T>(value: T): T {
   return structuredClone(value);
 }
 
+const scoringInvalidationKeys = [
+  "goal",
+  "dimensions",
+  "searchPlan",
+  "candidates",
+  "evidence"
+] as const;
+
+function hasOwnUpdate<Key extends keyof AnalysisRunUpdate>(
+  update: AnalysisRunUpdate,
+  key: Key
+): update is AnalysisRunUpdate & Required<Pick<AnalysisRunUpdate, Key>> {
+  return Object.prototype.hasOwnProperty.call(update, key);
+}
+
+function shouldClearScoring(current: AnalysisRun, update: AnalysisRunUpdate) {
+  if (hasOwnUpdate(update, "scoring")) {
+    return false;
+  }
+
+  return scoringInvalidationKeys.some((key) => {
+    if (!hasOwnUpdate(update, key)) {
+      return false;
+    }
+
+    return JSON.stringify(current[key]) !== JSON.stringify(update[key]);
+  });
+}
+
+function normalizeRunUpdate(current: AnalysisRun, update: AnalysisRunUpdate): AnalysisRunUpdate {
+  if (!shouldClearScoring(current, update)) {
+    return update;
+  }
+
+  return {
+    ...update,
+    scoring: null
+  };
+}
+
 export function createInMemoryAnalysisRunStore(): AnalysisRunStore {
   const records =
     globalThis.__targetIntelligenceMemoryRuns ??
@@ -75,6 +115,7 @@ function createDatabaseAnalysisRunStore(): AnalysisRunStore {
           searchPlan: run.searchPlan,
           candidates: run.candidates,
           evidence: run.evidence,
+          scoring: run.scoring,
           stageGoals: run.stageGoals,
           createdAt: new Date(run.createdAt),
           updatedAt: new Date(run.updatedAt)
@@ -144,7 +185,14 @@ export async function updateRunAggregate(
   update: AnalysisRunUpdate,
   store?: AnalysisRunStore
 ) {
-  return resolveStore(store).update(id, update);
+  const resolvedStore = resolveStore(store);
+  const currentRun = await resolvedStore.getById(id);
+
+  if (!currentRun) {
+    return null;
+  }
+
+  return resolvedStore.update(id, normalizeRunUpdate(currentRun, update));
 }
 
 export async function listRecentRuns(limit = 5, store?: AnalysisRunStore) {

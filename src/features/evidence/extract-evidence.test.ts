@@ -44,6 +44,7 @@ describe("extract evidence", () => {
     });
 
     expect(evidence).toHaveLength(1);
+    expect(evidence[0]?.id.startsWith("evi-")).toBe(true);
     expect(evidence[0]?.candidateId).toBe("productboard-com");
     expect(evidence[0]?.sourceType).toBe("official_site");
   });

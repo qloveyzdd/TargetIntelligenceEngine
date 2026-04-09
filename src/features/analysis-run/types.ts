@@ -62,6 +62,7 @@ export type SearchPlan = {
 };
 
 export type Evidence = {
+  id: string;
   candidateId: string;
   dimensionId: string;
   sourceType: SourceType;
@@ -70,6 +71,64 @@ export type Evidence = {
   extractedValue: string;
   confidence: number;
   capturedAt: string;
+};
+
+export type EvidenceAssessmentStatus =
+  | "supporting"
+  | "limiting"
+  | "mixed"
+  | "insufficient";
+
+export type DimensionScoreStatus = "known" | "unknown";
+
+export type ScoringContribution = {
+  evidenceId: string;
+  sourceType: SourceType;
+  confidence: number;
+  sourceWeight: number;
+  contributionWeight: number;
+  evidenceScore: number | null;
+  status: EvidenceAssessmentStatus;
+  summary: string;
+};
+
+export type DimensionScorecard = {
+  candidateId: string;
+  dimensionId: string;
+  status: DimensionScoreStatus;
+  score: number | null;
+  coverage: number;
+  evidenceIds: string[];
+  contributions: ScoringContribution[];
+  summary: string;
+};
+
+export type CandidateScorecard = {
+  candidateId: string;
+  overallScore: number | null;
+  coverage: number;
+  unknownCount: number;
+  dimensionScorecards: DimensionScorecard[];
+};
+
+export type GapPriority = {
+  dimensionId: string;
+  status: DimensionScoreStatus;
+  benchmarkCandidateId: string | null;
+  benchmarkCandidateName: string | null;
+  benchmarkMatchedModes: SearchPlanMode[];
+  benchmarkEvidenceIds: string[];
+  benchmarkScore: number | null;
+  baselineScore: number | null;
+  gapSize: number | null;
+  priority: number | null;
+  summary: string;
+};
+
+export type AnalysisRunScoring = {
+  generatedAt: string;
+  candidateScorecards: CandidateScorecard[];
+  gaps: GapPriority[];
 };
 
 export type StageGoal = {
@@ -102,6 +161,7 @@ export type AnalysisRun = {
   searchPlan: SearchPlan | null;
   candidates: Candidate[];
   evidence: Evidence[];
+  scoring: AnalysisRunScoring | null;
   stageGoals: StageGoal[];
   createdAt: string;
   updatedAt: string;
@@ -117,6 +177,7 @@ export type AnalysisRunUpdate = Partial<
     | "searchPlan"
     | "candidates"
     | "evidence"
+    | "scoring"
     | "stageGoals"
   >
 >;

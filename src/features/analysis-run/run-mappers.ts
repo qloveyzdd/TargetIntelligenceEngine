@@ -1,15 +1,26 @@
 import type { AnalysisRunRow } from "@/db/schema";
+import { assignEvidenceId } from "@/features/evidence/assign-evidence-id";
 import type {
   AnalysisRun,
+  AnalysisRunScoring,
   Candidate,
+  CandidateScorecard,
   CandidateSource,
   Dimension,
+  DimensionScorecard,
   Evidence,
+  GapPriority,
   GoalCard,
+  ScoringContribution,
   SearchPlan,
   SearchPlanItem,
+  SearchPlanMode,
   StageGoal
 } from "./types";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object";
+}
 
 function toStringArray(value: unknown) {
   if (!Array.isArray(value)) {
@@ -19,29 +30,40 @@ function toStringArray(value: unknown) {
   return value.filter((item): item is string => typeof item === "string");
 }
 
+function toNumber(value: unknown) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+}
+
 function toGoalCard(value: unknown): GoalCard | null {
-  if (!value || typeof value !== "object") {
+  if (!isRecord(value)) {
     return null;
   }
 
-  const card = value as Record<string, unknown>;
-
   if (
-    typeof card.name !== "string" ||
-    typeof card.category !== "string" ||
-    typeof card.jobToBeDone !== "string" ||
-    typeof card.currentStage !== "string"
+    typeof value.name !== "string" ||
+    typeof value.category !== "string" ||
+    typeof value.jobToBeDone !== "string" ||
+    typeof value.currentStage !== "string"
   ) {
     return null;
   }
 
   return {
-    name: card.name,
-    category: card.category,
-    jobToBeDone: card.jobToBeDone,
-    currentStage: card.currentStage as GoalCard["currentStage"],
-    hardConstraints: toStringArray(card.hardConstraints),
-    softPreferences: toStringArray(card.softPreferences)
+    name: value.name,
+    category: value.category,
+    jobToBeDone: value.jobToBeDone,
+    currentStage: value.currentStage as GoalCard["currentStage"],
+    hardConstraints: toStringArray(value.hardConstraints),
+    softPreferences: toStringArray(value.softPreferences)
   };
 }
 
@@ -51,21 +73,19 @@ function toDimensions(value: unknown): Dimension[] {
   }
 
   return value.filter((item): item is Dimension => {
-    if (!item || typeof item !== "object") {
+    if (!isRecord(item)) {
       return false;
     }
 
-    const dimension = item as Record<string, unknown>;
-
     return (
-      typeof dimension.id === "string" &&
-      typeof dimension.name === "string" &&
-      typeof dimension.weight === "number" &&
-      typeof dimension.direction === "string" &&
-      typeof dimension.definition === "string" &&
-      Array.isArray(dimension.evidenceNeeded) &&
-      typeof dimension.layer === "string" &&
-      typeof dimension.enabled === "boolean"
+      typeof item.id === "string" &&
+      typeof item.name === "string" &&
+      typeof item.weight === "number" &&
+      typeof item.direction === "string" &&
+      typeof item.definition === "string" &&
+      Array.isArray(item.evidenceNeeded) &&
+      typeof item.layer === "string" &&
+      typeof item.enabled === "boolean"
     );
   });
 }
@@ -76,13 +96,11 @@ function toCandidateSources(value: unknown): CandidateSource[] {
   }
 
   return value.filter((item): item is CandidateSource => {
-    if (!item || typeof item !== "object") {
+    if (!isRecord(item)) {
       return false;
     }
 
-    const source = item as Record<string, unknown>;
-
-    return typeof source.sourceType === "string" && typeof source.url === "string";
+    return typeof item.sourceType === "string" && typeof item.url === "string";
   });
 }
 
@@ -92,27 +110,26 @@ function toCandidates(value: unknown): Candidate[] {
   }
 
   return value.filter((item): item is Candidate => {
-    if (!item || typeof item !== "object") {
+    if (!isRecord(item)) {
       return false;
     }
 
-    const candidate = item as Record<string, unknown>;
-    const matchedModes = toStringArray(candidate.matchedModes);
-    const strengthDimensions = toStringArray(candidate.strengthDimensions);
-    const matchedQueries = toStringArray(candidate.matchedQueries);
-    const sources = toCandidateSources(candidate.sources);
+    const matchedModes = toStringArray(item.matchedModes);
+    const strengthDimensions = toStringArray(item.strengthDimensions);
+    const matchedQueries = toStringArray(item.matchedQueries);
+    const sources = toCandidateSources(item.sources);
 
     return (
-      typeof candidate.id === "string" &&
-      typeof candidate.name === "string" &&
-      matchedModes.length === (Array.isArray(candidate.matchedModes) ? candidate.matchedModes.length : -1) &&
+      typeof item.id === "string" &&
+      typeof item.name === "string" &&
+      matchedModes.length === (Array.isArray(item.matchedModes) ? item.matchedModes.length : -1) &&
       strengthDimensions.length ===
-        (Array.isArray(candidate.strengthDimensions) ? candidate.strengthDimensions.length : -1) &&
+        (Array.isArray(item.strengthDimensions) ? item.strengthDimensions.length : -1) &&
       matchedQueries.length ===
-        (Array.isArray(candidate.matchedQueries) ? candidate.matchedQueries.length : -1) &&
-      sources.length === (Array.isArray(candidate.sources) ? candidate.sources.length : -1) &&
-      typeof candidate.recallRank === "number" &&
-      (typeof candidate.officialUrl === "string" || candidate.officialUrl === null)
+        (Array.isArray(item.matchedQueries) ? item.matchedQueries.length : -1) &&
+      sources.length === (Array.isArray(item.sources) ? item.sources.length : -1) &&
+      typeof item.recallRank === "number" &&
+      (typeof item.officialUrl === "string" || item.officialUrl === null)
     );
   });
 }
@@ -123,44 +140,39 @@ function toSearchPlanItems(value: unknown): SearchPlanItem[] {
   }
 
   return value.filter((item): item is SearchPlanItem => {
-    if (!item || typeof item !== "object") {
+    if (!isRecord(item)) {
       return false;
     }
 
-    const searchPlanItem = item as Record<string, unknown>;
-
     return (
-      typeof searchPlanItem.id === "string" &&
-      typeof searchPlanItem.mode === "string" &&
-      (typeof searchPlanItem.dimensionId === "string" ||
-        searchPlanItem.dimensionId === null) &&
-      typeof searchPlanItem.query === "string" &&
-      typeof searchPlanItem.whatToFind === "string" &&
-      typeof searchPlanItem.whyThisSearch === "string" &&
-      typeof searchPlanItem.expectedCandidateCount === "number" &&
-      Array.isArray(searchPlanItem.sourceHints)
+      typeof item.id === "string" &&
+      typeof item.mode === "string" &&
+      (typeof item.dimensionId === "string" || item.dimensionId === null) &&
+      typeof item.query === "string" &&
+      typeof item.whatToFind === "string" &&
+      typeof item.whyThisSearch === "string" &&
+      typeof item.expectedCandidateCount === "number" &&
+      Array.isArray(item.sourceHints)
     );
   });
 }
 
 function toSearchPlan(value: unknown): SearchPlan | null {
-  if (!value || typeof value !== "object") {
+  if (!isRecord(value)) {
     return null;
   }
 
-  const searchPlan = value as Record<string, unknown>;
-
   if (
-    typeof searchPlan.status !== "string" ||
-    (searchPlan.confirmedAt !== null && typeof searchPlan.confirmedAt !== "string")
+    typeof value.status !== "string" ||
+    (value.confirmedAt !== null && typeof value.confirmedAt !== "string")
   ) {
     return null;
   }
 
   return {
-    status: searchPlan.status as SearchPlan["status"],
-    items: toSearchPlanItems(searchPlan.items),
-    confirmedAt: searchPlan.confirmedAt as SearchPlan["confirmedAt"]
+    status: value.status as SearchPlan["status"],
+    items: toSearchPlanItems(value.items),
+    confirmedAt: value.confirmedAt as SearchPlan["confirmedAt"]
   };
 }
 
@@ -169,24 +181,210 @@ function toEvidence(value: unknown): Evidence[] {
     return [];
   }
 
-  return value.filter((item): item is Evidence => {
-    if (!item || typeof item !== "object") {
-      return false;
+  return value.flatMap((item) => {
+    if (!isRecord(item)) {
+      return [];
     }
 
-    const evidence = item as Record<string, unknown>;
+    if (
+      typeof item.candidateId !== "string" ||
+      typeof item.dimensionId !== "string" ||
+      typeof item.sourceType !== "string" ||
+      typeof item.url !== "string" ||
+      typeof item.excerpt !== "string" ||
+      typeof item.extractedValue !== "string" ||
+      typeof item.capturedAt !== "string"
+    ) {
+      return [];
+    }
 
-    return (
-      typeof evidence.candidateId === "string" &&
-      typeof evidence.dimensionId === "string" &&
-      typeof evidence.sourceType === "string" &&
-      typeof evidence.url === "string" &&
-      typeof evidence.excerpt === "string" &&
-      typeof evidence.extractedValue === "string" &&
-      typeof evidence.confidence === "number" &&
-      typeof evidence.capturedAt === "string"
-    );
+    const confidence = toNumber(item.confidence);
+
+    if (confidence === null) {
+      return [];
+    }
+
+    const normalized: Evidence = {
+      id:
+        typeof item.id === "string" && item.id.trim()
+          ? item.id.trim()
+          : assignEvidenceId({
+              candidateId: item.candidateId,
+              dimensionId: item.dimensionId,
+              sourceType: item.sourceType as Evidence["sourceType"],
+              url: item.url,
+              excerpt: item.excerpt,
+              extractedValue: item.extractedValue
+            }),
+      candidateId: item.candidateId,
+      dimensionId: item.dimensionId,
+      sourceType: item.sourceType as Evidence["sourceType"],
+      url: item.url,
+      excerpt: item.excerpt,
+      extractedValue: item.extractedValue,
+      confidence,
+      capturedAt: item.capturedAt
+    };
+
+    return [normalized];
   });
+}
+
+function toScoringContribution(value: unknown): ScoringContribution | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const confidence = toNumber(value.confidence);
+  const sourceWeight = toNumber(value.sourceWeight);
+  const contributionWeight = toNumber(value.contributionWeight);
+  const evidenceScore = value.evidenceScore === null ? null : toNumber(value.evidenceScore);
+
+  if (
+    typeof value.evidenceId !== "string" ||
+    typeof value.sourceType !== "string" ||
+    confidence === null ||
+    sourceWeight === null ||
+    contributionWeight === null ||
+    typeof value.status !== "string" ||
+    typeof value.summary !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    evidenceId: value.evidenceId,
+    sourceType: value.sourceType as ScoringContribution["sourceType"],
+    confidence,
+    sourceWeight,
+    contributionWeight,
+    evidenceScore,
+    status: value.status as ScoringContribution["status"],
+    summary: value.summary
+  };
+}
+
+function toDimensionScorecard(value: unknown): DimensionScorecard | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const score = value.score === null ? null : toNumber(value.score);
+  const coverage = toNumber(value.coverage);
+
+  if (
+    typeof value.candidateId !== "string" ||
+    typeof value.dimensionId !== "string" ||
+    typeof value.status !== "string" ||
+    coverage === null ||
+    typeof value.summary !== "string"
+  ) {
+    return null;
+  }
+
+  const evidenceIds = toStringArray(value.evidenceIds);
+  const contributions = Array.isArray(value.contributions)
+    ? value.contributions
+        .map((item) => toScoringContribution(item))
+        .filter((item): item is ScoringContribution => item !== null)
+    : [];
+
+  return {
+    candidateId: value.candidateId,
+    dimensionId: value.dimensionId,
+    status: value.status as DimensionScorecard["status"],
+    score,
+    coverage,
+    evidenceIds,
+    contributions,
+    summary: value.summary
+  };
+}
+
+function toCandidateScorecard(value: unknown): CandidateScorecard | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const overallScore = value.overallScore === null ? null : toNumber(value.overallScore);
+  const coverage = toNumber(value.coverage);
+  const unknownCount = toNumber(value.unknownCount);
+
+  if (
+    typeof value.candidateId !== "string" ||
+    coverage === null ||
+    unknownCount === null ||
+    !Array.isArray(value.dimensionScorecards)
+  ) {
+    return null;
+  }
+
+  const dimensionScorecards = value.dimensionScorecards
+    .map((item) => toDimensionScorecard(item))
+    .filter((item): item is DimensionScorecard => item !== null);
+
+  return {
+    candidateId: value.candidateId,
+    overallScore,
+    coverage,
+    unknownCount,
+    dimensionScorecards
+  };
+}
+
+function toGapPriority(value: unknown): GapPriority | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const benchmarkScore =
+    value.benchmarkScore === null ? null : toNumber(value.benchmarkScore);
+  const baselineScore = value.baselineScore === null ? null : toNumber(value.baselineScore);
+  const gapSize = value.gapSize === null ? null : toNumber(value.gapSize);
+  const priority = value.priority === null ? null : toNumber(value.priority);
+
+  if (typeof value.dimensionId !== "string" || typeof value.status !== "string") {
+    return null;
+  }
+
+  return {
+    dimensionId: value.dimensionId,
+    status: value.status as GapPriority["status"],
+    benchmarkCandidateId:
+      typeof value.benchmarkCandidateId === "string" ? value.benchmarkCandidateId : null,
+    benchmarkCandidateName:
+      typeof value.benchmarkCandidateName === "string" ? value.benchmarkCandidateName : null,
+    benchmarkMatchedModes: toStringArray(value.benchmarkMatchedModes) as SearchPlanMode[],
+    benchmarkEvidenceIds: toStringArray(value.benchmarkEvidenceIds),
+    benchmarkScore,
+    baselineScore,
+    gapSize,
+    priority,
+    summary: typeof value.summary === "string" ? value.summary : ""
+  };
+}
+
+function toAnalysisRunScoring(value: unknown): AnalysisRunScoring | null {
+  if (!isRecord(value) || typeof value.generatedAt !== "string") {
+    return null;
+  }
+
+  const candidateScorecards = Array.isArray(value.candidateScorecards)
+    ? value.candidateScorecards
+        .map((item) => toCandidateScorecard(item))
+        .filter((item): item is CandidateScorecard => item !== null)
+    : [];
+  const gaps = Array.isArray(value.gaps)
+    ? value.gaps
+        .map((item) => toGapPriority(item))
+        .filter((item): item is GapPriority => item !== null)
+    : [];
+
+  return {
+    generatedAt: value.generatedAt,
+    candidateScorecards,
+    gaps
+  };
 }
 
 function toStageGoals(value: unknown): StageGoal[] {
@@ -195,20 +393,18 @@ function toStageGoals(value: unknown): StageGoal[] {
   }
 
   return value.filter((item): item is StageGoal => {
-    if (!item || typeof item !== "object") {
+    if (!isRecord(item)) {
       return false;
     }
 
-    const goal = item as Record<string, unknown>;
-
     return (
-      typeof goal.stage === "string" &&
-      typeof goal.objective === "string" &&
-      Array.isArray(goal.relatedDimensions) &&
-      Array.isArray(goal.benchmarkProducts) &&
-      Array.isArray(goal.successMetrics) &&
-      Array.isArray(goal.deliverables) &&
-      Array.isArray(goal.risks)
+      typeof item.stage === "string" &&
+      typeof item.objective === "string" &&
+      Array.isArray(item.relatedDimensions) &&
+      Array.isArray(item.benchmarkProducts) &&
+      Array.isArray(item.successMetrics) &&
+      Array.isArray(item.deliverables) &&
+      Array.isArray(item.risks)
     );
   });
 }
@@ -224,6 +420,7 @@ export function toAnalysisRun(row: AnalysisRunRow): AnalysisRun {
     searchPlan: toSearchPlan(row.searchPlan),
     candidates: toCandidates(row.candidates),
     evidence: toEvidence(row.evidence),
+    scoring: toAnalysisRunScoring(row.scoring),
     stageGoals: toStageGoals(row.stageGoals),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString()
@@ -246,6 +443,7 @@ export function createDraftRunAggregate(input: {
     searchPlan: null,
     candidates: [],
     evidence: [],
+    scoring: null,
     stageGoals: [],
     createdAt: timestamp,
     updatedAt: timestamp

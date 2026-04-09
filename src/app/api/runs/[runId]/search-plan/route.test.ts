@@ -232,6 +232,7 @@ describe("search plan route", () => {
       ],
       evidence: [
         {
+          id: "evi-usability-1",
           candidateId: "productboard-com",
           dimensionId: "usability",
           sourceType: "official_site",

@@ -148,7 +148,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
                   <div style={styles.records}>
                     {records.map((record, index) => (
                       <div
-                        key={`${record.url}:${index}`}
+                        key={record.id ?? `${record.url}:${index}`}
                         style={styles.record}
                         data-testid="evidence-record"
                       >

@@ -19,6 +19,7 @@ describe("evidence schema", () => {
     });
 
     expect(payload).not.toBeNull();
+    expect(payload?.[0]?.id.startsWith("evi-")).toBe(true);
     expect(payload?.[0]?.sourceType).toBe("official_site");
   });
 

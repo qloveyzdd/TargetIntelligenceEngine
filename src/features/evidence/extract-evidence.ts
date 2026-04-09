@@ -4,6 +4,7 @@ import {
   coerceEvidencePayload,
   evidencePayloadSchema
 } from "./schema";
+import { assignEvidenceId } from "./assign-evidence-id";
 import type { EvidenceSourceTask } from "./build-evidence-source-tasks";
 
 type ExtractEvidenceInput = {
@@ -14,14 +15,25 @@ type ExtractEvidenceInput = {
 };
 
 function buildMockEvidence(input: ExtractEvidenceInput): Evidence[] {
+  const excerpt = input.pageText.slice(0, 180);
+  const extractedValue = `${input.dimension.name} signal from ${input.task.sourceType}`;
+
   return [
     {
+      id: assignEvidenceId({
+        candidateId: input.candidate.id,
+        dimensionId: input.dimension.id,
+        sourceType: input.task.sourceType,
+        url: input.task.url,
+        excerpt,
+        extractedValue
+      }),
       candidateId: input.candidate.id,
       dimensionId: input.dimension.id,
       sourceType: input.task.sourceType,
       url: input.task.url,
-      excerpt: input.pageText.slice(0, 180),
-      extractedValue: `${input.dimension.name} signal from ${input.task.sourceType}`,
+      excerpt,
+      extractedValue,
       confidence: 0.82,
       capturedAt: new Date().toISOString()
     }
