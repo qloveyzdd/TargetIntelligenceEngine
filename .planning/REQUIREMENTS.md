@@ -7,14 +7,14 @@
 
 ### Goal Intake
 
-- [ ] **GOAL-01**: 用户可以输入一句自然语言目标描述发起分析
-- [ ] **GOAL-02**: 用户可以补充额外上下文文本，例如约束、偏好和当前阶段
-- [ ] **GOAL-03**: 系统可以把输入整理成结构化 GoalCard，至少包含名称、类别、JTBD、硬约束、软偏好、当前阶段
-- [ ] **GOAL-04**: 用户可以在执行检索前查看并修改 GoalCard
+- [x] **GOAL-01**: 用户可以输入一句自然语言目标描述发起分析
+- [x] **GOAL-02**: 用户可以补充额外上下文文本，例如约束、偏好和当前阶段
+- [x] **GOAL-03**: 系统可以把输入整理成结构化 GoalCard，至少包含名称、类别、JTBD、硬约束、软偏好、当前阶段
+- [x] **GOAL-04**: 用户可以在执行检索前查看并修改 GoalCard
 
 ### Dimensions
 
-- [ ] **DIME-01**: 系统可以输出通用层、领域层、项目层合并后的维度列表
+- [x] **DIME-01**: 系统可以输出通用层、领域层、项目层合并后的维度列表
 - [ ] **DIME-02**: 用户可以调整每个维度的权重
 - [ ] **DIME-03**: 用户可以查看并修改维度方向、定义和证据需求
 - [ ] **DIME-04**: 用户可以禁用与当前目标无关的维度
@@ -81,11 +81,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GOAL-01 | Phase 1 | Pending |
-| GOAL-02 | Phase 1 | Pending |
-| GOAL-03 | Phase 1 | Pending |
-| GOAL-04 | Phase 1 | Pending |
-| DIME-01 | Phase 1 | Pending |
+| GOAL-01 | Phase 1 | Complete |
+| GOAL-02 | Phase 1 | Complete |
+| GOAL-03 | Phase 1 | Complete |
+| GOAL-04 | Phase 1 | Complete |
+| DIME-01 | Phase 1 | Complete |
 | DIME-02 | Phase 2 | Pending |
 | DIME-03 | Phase 2 | Pending |
 | DIME-04 | Phase 2 | Pending |
@@ -111,4 +111,4 @@
 
 ---
 *Requirements defined: 2026-04-10*  
-*Last updated: 2026-04-10 after initial definition*
+*Last updated: 2026-04-10 after Phase 1 completion*

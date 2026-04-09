@@ -10,7 +10,7 @@
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Foundation & Goal Backbone** - 固定核心对象、输入模型与 GoalCard 流程
+- [x] **Phase 1: Foundation & Goal Backbone** - 固定核心对象、输入模型与 GoalCard 流程 (completed 2026-04-10)
 - [ ] **Phase 2: Dimension Engine & Search Planning** - 建立三层维度引擎与双模式检索计划
 - [ ] **Phase 3: Candidate Recall & Evidence Intake** - 召回候选并建立证据链
 - [ ] **Phase 4: Explainable Scoring & Gap Engine** - 把证据转成可解释评分与差距优先级
@@ -30,9 +30,9 @@
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: 建立应用骨架与 analysis run 数据模型
-- [ ] 01-02: 实现 GoalCard 生成与编辑流程
-- [ ] 01-03: 接入初版通用层维度模板与持久化
+- [x] 01-01: 建立应用骨架与 analysis run 数据模型
+- [x] 01-02: 实现 GoalCard 生成与编辑流程
+- [x] 01-03: 接入初版通用层维度模板与持久化
 
 ### Phase 2: Dimension Engine & Search Planning
 **Goal**: 把目标输入转成稳定维度和双模式检索计划
@@ -114,7 +114,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Goal Backbone | 0/3 | Not started | - |
+| 1. Foundation & Goal Backbone | 3/3 | Complete    | 2026-04-10 |
 | 2. Dimension Engine & Search Planning | 0/3 | Not started | - |
 | 3. Candidate Recall & Evidence Intake | 0/3 | Not started | - |
 | 4. Explainable Scoring & Gap Engine | 0/2 | Not started | - |
