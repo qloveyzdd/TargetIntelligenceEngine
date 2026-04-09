@@ -1,12 +1,61 @@
+"use client";
+
 import Link from "next/link";
-import type { AnalysisRun } from "@/features/analysis-run/types";
+import type { CSSProperties } from "react";
+import { useState } from "react";
+import type { AnalysisRun, Dimension } from "@/features/analysis-run/types";
 import { AnalysisPlaceholders } from "./analysis-placeholders";
+import { GoalCardEditor } from "./goal-card-editor";
+import { GoalInputForm } from "./goal-input-form";
 
 type RunShellProps = {
   run?: AnalysisRun | null;
 };
 
+type DimensionSummaryProps = {
+  dimensions: Dimension[];
+};
+
+function DimensionSummary({ dimensions }: DimensionSummaryProps) {
+  if (dimensions.length === 0) {
+    return (
+      <div style={styles.dimensionEmpty}>
+        Confirm the GoalCard to inject the initial six core dimensions.
+      </div>
+    );
+  }
+
+  return (
+    <div style={styles.dimensionBlock} data-testid="dimension-summary">
+      <div style={styles.panelHeader}>
+        <div>
+          <p style={styles.sectionEyebrow}>Dimensions</p>
+          <h3 style={styles.dimensionTitle}>Initial core dimensions</h3>
+        </div>
+        <span style={styles.panelMeta}>{dimensions.length} items</span>
+      </div>
+      <div style={styles.dimensionGrid}>
+        {dimensions.map((dimension) => (
+          <article
+            key={dimension.id}
+            style={styles.dimensionCard}
+            data-testid="dimension-card"
+          >
+            <strong>{dimension.name}</strong>
+            <p style={styles.dimensionMeta}>
+              Weight: {dimension.weight.toFixed(3)} | Direction: {dimension.direction}
+            </p>
+            <p style={styles.dimensionDefinition}>{dimension.definition}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function RunShell({ run = null }: RunShellProps) {
+  const [currentRun, setCurrentRun] = useState<AnalysisRun | null>(run);
+
   return (
     <div style={styles.page}>
       <section style={styles.hero}>
@@ -14,13 +63,14 @@ export function RunShell({ run = null }: RunShellProps) {
           <p style={styles.eyebrow}>Phase 1 Workspace</p>
           <h1 style={styles.title}>Target Intelligence Engine</h1>
           <p style={styles.subtitle}>
-            先把分析容器搭好，再逐步接入 GoalCard、维度、候选、证据和阶段目标。
+            Start with a stable analysis container, then add GoalCard, dimensions,
+            candidates, evidence, and stage goals on top of it.
           </p>
         </div>
-        {run ? (
-          <div style={styles.runChip}>当前 run：{run.id}</div>
+        {currentRun ? (
+          <div style={styles.runChip}>Current run: {currentRun.id}</div>
         ) : (
-          <div style={styles.runChip}>准备创建第一条 analysis run</div>
+          <div style={styles.runChip}>Ready to create the first analysis run</div>
         )}
       </section>
 
@@ -28,74 +78,74 @@ export function RunShell({ run = null }: RunShellProps) {
         <div style={styles.panelHeader}>
           <div>
             <p style={styles.sectionEyebrow}>Goal Input</p>
-            <h2 style={styles.sectionTitle}>顶部输入区</h2>
+            <h2 style={styles.sectionTitle}>Top input area</h2>
           </div>
-          <span style={styles.panelMeta}>Phase 1 skeleton</span>
+          <span style={styles.panelMeta}>GoalInputForm</span>
         </div>
-        <p style={styles.paragraph}>
-          这里是目标描述和补充文本的入口。下一步会接入真实的 GoalCard 生成与编辑工作流，
-          当前先把单页布局、容器层级和 run 上下文稳定下来。
-        </p>
+        <GoalInputForm
+          initialInputText={currentRun?.inputText ?? ""}
+          initialInputNotes={currentRun?.inputNotes ?? ""}
+          onRunChanged={setCurrentRun}
+        />
       </section>
 
       <section style={styles.panel}>
         <div style={styles.panelHeader}>
           <div>
             <p style={styles.sectionEyebrow}>GoalCard</p>
-            <h2 style={styles.sectionTitle}>结构化目标区域</h2>
+            <h2 style={styles.sectionTitle}>Structured goal area</h2>
           </div>
-          {run?.goal ? (
-            <span style={styles.panelMeta}>已存在 GoalCard</span>
+          {currentRun?.goal ? (
+            <span style={styles.panelMeta}>GoalCard ready</span>
           ) : (
-            <span style={styles.panelMeta}>等待 GoalCard</span>
+            <span style={styles.panelMeta}>Waiting for GoalCard</span>
           )}
         </div>
-        {run?.goal ? (
-          <dl style={styles.goalGrid}>
-            <div style={styles.goalField}>
-              <dt style={styles.goalLabel}>名称</dt>
-              <dd style={styles.goalValue}>{run.goal.name}</dd>
-            </div>
-            <div style={styles.goalField}>
-              <dt style={styles.goalLabel}>类别</dt>
-              <dd style={styles.goalValue}>{run.goal.category}</dd>
-            </div>
-            <div style={styles.goalField}>
-              <dt style={styles.goalLabel}>当前阶段</dt>
-              <dd style={styles.goalValue}>{run.goal.currentStage}</dd>
-            </div>
-            <div style={styles.goalField}>
-              <dt style={styles.goalLabel}>JTBD</dt>
-              <dd style={styles.goalValue}>{run.goal.jobToBeDone}</dd>
-            </div>
-          </dl>
+        {currentRun?.goal ? (
+          <GoalCardEditor
+            key={`${currentRun.id}:${currentRun.updatedAt}`}
+            run={currentRun}
+            onRunChanged={setCurrentRun}
+          />
         ) : (
           <p style={styles.paragraph}>
-            GoalCard 生成结果会显示在这里。当前阶段先展示容器，确保首页和 run
-            详情页都能维持同一套骨架。
+            The generated GoalCard appears here. After the top form completes, this
+            area switches into an editable form so the user can confirm the result.
           </p>
         )}
       </section>
 
-      {run ? (
-        <section style={styles.panel}>
+      {currentRun ? (
+        <section style={styles.panel} data-testid="run-detail-panel">
           <div style={styles.panelHeader}>
             <div>
               <p style={styles.sectionEyebrow}>Run Detail</p>
-              <h2 style={styles.sectionTitle}>当前 run 数据</h2>
+              <h2 style={styles.sectionTitle}>Current run data</h2>
             </div>
-            <Link href="/" style={styles.link}>
-              返回首页
-            </Link>
+            <div style={styles.linkGroup}>
+              <Link href="/" style={styles.link}>
+                Back to home
+              </Link>
+              <Link
+                href={`/runs/${currentRun.id}`}
+                style={styles.link}
+                data-testid="open-run-detail"
+              >
+                Open run detail
+              </Link>
+            </div>
           </div>
           <p style={styles.paragraph}>
-            当前状态：<strong>{run.status}</strong>
-            {run.inputNotes ? ` · 补充文本：${run.inputNotes}` : " · 暂无补充文本"}
+            Current status: <strong>{currentRun.status}</strong>
+            {currentRun.inputNotes
+              ? ` | Notes: ${currentRun.inputNotes}`
+              : " | No supporting notes"}
           </p>
+          <DimensionSummary dimensions={currentRun.dimensions} />
         </section>
       ) : null}
 
-      <AnalysisPlaceholders statusLabel={run?.status ?? "draft"} />
+      <AnalysisPlaceholders statusLabel={currentRun?.status ?? "draft"} />
     </div>
   );
 }
@@ -182,28 +232,53 @@ const styles = {
     lineHeight: 1.8,
     margin: 0
   },
-  goalGrid: {
-    display: "grid",
-    gap: "14px",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    margin: 0
-  },
-  goalField: {
-    background: "rgba(255,255,255,0.55)",
-    borderRadius: "16px",
-    padding: "16px"
-  },
-  goalLabel: {
-    color: "var(--text-muted)",
-    fontSize: "13px",
-    marginBottom: "8px"
-  },
-  goalValue: {
-    fontSize: "17px",
-    margin: 0
-  },
   link: {
     color: "var(--accent)",
     fontWeight: 600
+  },
+  linkGroup: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "12px"
+  },
+  dimensionBlock: {
+    display: "grid",
+    gap: "16px",
+    marginTop: "20px"
+  },
+  dimensionTitle: {
+    fontSize: "22px",
+    margin: 0
+  },
+  dimensionGrid: {
+    display: "grid",
+    gap: "12px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))"
+  },
+  dimensionCard: {
+    background: "rgba(255,255,255,0.6)",
+    border: "1px solid var(--card-border)",
+    borderRadius: "18px",
+    display: "grid",
+    gap: "8px",
+    padding: "16px"
+  },
+  dimensionMeta: {
+    color: "var(--text-muted)",
+    fontSize: "13px",
+    margin: 0
+  },
+  dimensionDefinition: {
+    color: "var(--text-muted)",
+    lineHeight: 1.6,
+    margin: 0
+  },
+  dimensionEmpty: {
+    background: "rgba(255,255,255,0.6)",
+    border: "1px dashed var(--card-border)",
+    borderRadius: "18px",
+    color: "var(--text-muted)",
+    marginTop: "20px",
+    padding: "18px"
   }
-} satisfies Record<string, React.CSSProperties>;
+} satisfies Record<string, CSSProperties>;

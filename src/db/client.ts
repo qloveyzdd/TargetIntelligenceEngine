@@ -3,9 +3,7 @@ import { Pool } from "pg";
 import * as schema from "./schema";
 
 declare global {
-  // eslint-disable-next-line no-var
   var __targetIntelligencePool: Pool | undefined;
-  // eslint-disable-next-line no-var
   var __targetIntelligenceDb:
     | ReturnType<typeof drizzle<typeof schema>>
     | undefined;

@@ -12,7 +12,6 @@ type AnalysisRunStore = {
 };
 
 declare global {
-  // eslint-disable-next-line no-var
   var __targetIntelligenceMemoryRuns: Map<string, AnalysisRun> | undefined;
 }
 

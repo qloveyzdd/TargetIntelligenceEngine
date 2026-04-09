@@ -1,13 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { createInMemoryAnalysisRunStore, createDraftRun, getRunById, updateRunAggregate } from "./repository";
+import {
+  createDraftRun,
+  createInMemoryAnalysisRunStore,
+  getRunById,
+  updateRunAggregate
+} from "./repository";
 
 describe("analysis run repository", () => {
   it("creates a draft run with the five core aggregate fields", async () => {
     const store = createInMemoryAnalysisRunStore();
     const run = await createDraftRun(
       {
-        inputText: "做一个可解释的目标 intelligence engine",
-        inputNotes: "面向产品负责人"
+        inputText: "Build an explainable target intelligence engine.",
+        inputNotes: "For product planners."
       },
       store
     );
@@ -24,7 +29,7 @@ describe("analysis run repository", () => {
     const store = createInMemoryAnalysisRunStore();
     const run = await createDraftRun(
       {
-        inputText: "做一个分析工作台"
+        inputText: "Build an analysis workspace"
       },
       store
     );
@@ -34,11 +39,11 @@ describe("analysis run repository", () => {
       {
         status: "goal_ready",
         goal: {
-          name: "分析工作台",
+          name: "Analysis Workspace",
           category: "AI Product Tool",
-          jobToBeDone: "帮助团队把目标拆成结构化 GoalCard",
-          hardConstraints: ["开源"],
-          softPreferences: ["易用"],
+          jobToBeDone: "Turn user goals into a structured GoalCard.",
+          hardConstraints: ["Open source"],
+          softPreferences: ["Easy to use"],
           currentStage: "validation"
         }
       },
@@ -48,7 +53,7 @@ describe("analysis run repository", () => {
     const updated = await getRunById(run.id, store);
 
     expect(updated?.status).toBe("goal_ready");
-    expect(updated?.goal?.name).toBe("分析工作台");
+    expect(updated?.goal?.name).toBe("Analysis Workspace");
     expect(updated?.goal?.currentStage).toBe("validation");
   });
 });
