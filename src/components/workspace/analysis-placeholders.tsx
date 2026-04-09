@@ -5,15 +5,18 @@ type AnalysisPlaceholdersProps = {
 const sections = [
   {
     title: "Candidates",
-    description: "Phase 1 先保留候选产品区域，后续 phase 再接入 same_goal 和 dimension_leader 召回。"
+    description:
+      "Phase 1 keeps the container stable. Same-goal and dimension-leader recall land in a later phase."
   },
   {
     title: "Evidence",
-    description: "证据链将在后续 phase 接入白名单公开资料抓取与结构化抽取。"
+    description:
+      "Evidence extraction is intentionally deferred until the public-source retrieval flow is ready."
   },
   {
     title: "Stage Goals",
-    description: "阶段目标会在 gap engine 具备之后生成，这里先保留容器。"
+    description:
+      "Stage goals stay as a placeholder until the gap engine can produce evidence-backed milestones."
   }
 ];
 
@@ -27,7 +30,7 @@ export function AnalysisPlaceholders({
           <div style={styles.badge}>Phase 1 placeholder</div>
           <h3 style={styles.cardTitle}>{section.title}</h3>
           <p style={styles.cardDescription}>{section.description}</p>
-          <p style={styles.cardMeta}>当前 run 状态：{statusLabel}</p>
+          <p style={styles.cardMeta}>Current run status: {statusLabel}</p>
         </article>
       ))}
     </section>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { RunShell } from "@/components/workspace/run-shell";
 import { getRunById } from "@/features/analysis-run/repository";
 
@@ -17,12 +18,13 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
       <main style={styles.emptyPage}>
         <article style={styles.emptyCard}>
           <p style={styles.eyebrow}>Run Detail</p>
-          <h1 style={styles.title}>未找到对应的 analysis run</h1>
+          <h1 style={styles.title}>The requested analysis run was not found</h1>
           <p style={styles.description}>
-            当前 `runId` 是 <code>{runId}</code>。这通常表示 run 还没有创建，或者当前存储里不存在这条记录。
+            The current <code>runId</code> is <code>{runId}</code>. This usually means
+            the run has not been created yet, or the active store does not contain it.
           </p>
           <Link href="/" style={styles.link}>
-            返回首页继续创建
+            Back to home
           </Link>
         </article>
       </main>
@@ -67,4 +69,4 @@ const styles = {
     color: "var(--accent)",
     fontWeight: 600
   }
-} satisfies Record<string, React.CSSProperties>;
+} satisfies Record<string, CSSProperties>;
