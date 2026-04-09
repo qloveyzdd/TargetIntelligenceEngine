@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready_for_next_phase
-stopped_at: Phase 2 execution complete
-last_updated: "2026-04-10T05:00:52+08:00"
-last_activity: 2026-04-10 -- Phase 02 completed
+status: planning
+stopped_at: Phase 3 context gathered
+last_updated: "2026-04-10T05:20:49+08:00"
+last_activity: 2026-04-10 -- Phase 03 context captured
 progress:
   total_phases: 6
   completed_phases: 2
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 
 ## Current Position
 
-Phase: 03 (candidate-recall-evidence-intake) - READY
+Phase: 03 (candidate-recall-evidence-intake) - READY FOR PLANNING
 Current Phase Name: candidate-recall-evidence-intake
 Plan: Not started
-Status: Ready for Phase 03 discuss/planning
+Status: Ready for Phase 03 planning
 Last activity: 2026-04-10
-Last Activity Description: Phase 02 execution completed and verified
+Last Activity Description: Phase 03 context captured and ready for planning
 
 Progress: [##---] 33%
 
@@ -64,6 +64,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Init]: Split search planning into `same_goal` and `dimension_leader`
 - [Init]: MVP uses Postgres + JSONB + pgvector first
 - [Phase 2]: SearchPlan is a confirmable draft artifact, not candidate results
+- [Phase 3]: Candidate recall uses mixed public-source recall but official evidence priority
 
 ### Pending Todos
 
@@ -71,12 +72,12 @@ None yet.
 
 ### Blockers/Concerns
 
-- White-list recall strategy and evidence ingestion are still pending for Phase 3
-- Public-source ranking and citation capture remain to be built
-- GSD handoff output format stays deferred to Phase 6
+- White-list candidate recall and evidence extraction still need concrete implementation in Phase 3
+- Source normalization and candidate dedupe logic are not implemented yet
+- Scoring, visualization, and GSD handoff remain deferred to later phases
 
 ## Session Continuity
 
-Last session: 2026-04-10T05:00:52+08:00
-Stopped at: Phase 2 execution complete
-Resume file: .planning/ROADMAP.md
+Last session: 2026-04-10T05:20:49+08:00
+Stopped at: Phase 3 context gathered
+Resume file: .planning/phases/03-candidate-recall-evidence-intake/03-CONTEXT.md
