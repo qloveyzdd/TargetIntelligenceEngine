@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { AnalysisRun } from "@/features/analysis-run/types";
+import { ActionFeedback } from "./action-feedback";
 
 type GoalInputFormProps = {
   initialInputText?: string;
@@ -17,6 +18,7 @@ export function GoalInputForm({
   const [inputText, setInputText] = useState(initialInputText);
   const [inputNotes, setInputNotes] = useState(initialInputNotes ?? "");
   const [error, setError] = useState<string | null>(null);
+  const [lastCompletedRunId, setLastCompletedRunId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   async function submitGoalInput() {
@@ -82,6 +84,7 @@ export function GoalInputForm({
     }
 
     onRunChanged(runPayload.run);
+    setLastCompletedRunId(runPayload.run.id);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -93,6 +96,7 @@ export function GoalInputForm({
     }
 
     setError(null);
+    setLastCompletedRunId(null);
 
     startTransition(() => {
       void submitGoalInput().catch((submissionError) => {
@@ -104,6 +108,24 @@ export function GoalInputForm({
       });
     });
   }
+
+  const feedback =
+    error
+      ? { tone: "error" as const, message: error }
+      : isPending
+        ? {
+            tone: "pending" as const,
+            message: "正在创建分析并生成 GoalCard，请稍候……"
+          }
+        : lastCompletedRunId
+          ? {
+              tone: "success" as const,
+              message: "GoalCard 已生成，下一步可以在下方确认并继续。"
+            }
+          : {
+              tone: "neutral" as const,
+              message: "点击“生成 GoalCard”后，这里会显示当前进度和完成状态。"
+            };
 
   return (
     <form onSubmit={handleSubmit} style={styles.form} data-testid="goal-input-form">
@@ -142,8 +164,8 @@ export function GoalInputForm({
         >
           {isPending ? "生成中..." : "生成 GoalCard"}
         </button>
-        {error ? <p style={styles.error}>{error}</p> : null}
       </div>
+      <ActionFeedback tone={feedback.tone} message={feedback.message} />
     </form>
   );
 }
@@ -182,9 +204,5 @@ const styles = {
     color: "#fff",
     cursor: "pointer",
     padding: "12px 18px"
-  },
-  error: {
-    color: "#b12424",
-    margin: 0
   }
 } satisfies Record<string, React.CSSProperties>;

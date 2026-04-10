@@ -71,6 +71,108 @@ function parseEvidencePayload(raw: string) {
   return evidence;
 }
 
+function parseLenientEvidencePayload(
+  input: ExtractEvidenceInput,
+  raw: string
+): Evidence[] {
+  const parsed = JSON.parse(extractJsonObject(raw));
+  const items = Array.isArray(parsed)
+    ? parsed
+    : parsed && typeof parsed === "object" && Array.isArray((parsed as { evidence?: unknown }).evidence)
+      ? (parsed as { evidence: unknown[] }).evidence
+      : [];
+
+  const fallbackCapturedAt = new Date().toISOString();
+  const evidence = items
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const rawItem = item as Record<string, unknown>;
+      const excerpt =
+        typeof rawItem.excerpt === "string" && rawItem.excerpt.trim()
+          ? rawItem.excerpt.trim()
+          : typeof rawItem.content === "string" && rawItem.content.trim()
+            ? rawItem.content.trim()
+            : typeof rawItem.quote === "string" && rawItem.quote.trim()
+              ? rawItem.quote.trim()
+              : "";
+      const extractedValue =
+        typeof rawItem.extractedValue === "string" && rawItem.extractedValue.trim()
+          ? rawItem.extractedValue.trim()
+          : typeof rawItem.value === "string" && rawItem.value.trim()
+            ? rawItem.value.trim()
+            : excerpt.slice(0, 120);
+      const confidence =
+        typeof rawItem.confidence === "number"
+          ? rawItem.confidence
+          : Number(rawItem.confidence ?? 0.72);
+
+      if (!excerpt || !extractedValue || !Number.isFinite(confidence)) {
+        return null;
+      }
+
+      return {
+        id: assignEvidenceId({
+          candidateId: input.candidate.id,
+          dimensionId: input.dimension.id,
+          sourceType: input.task.sourceType,
+          url: input.task.url,
+          excerpt,
+          extractedValue
+        }),
+        candidateId: input.candidate.id,
+        dimensionId: input.dimension.id,
+        sourceType: input.task.sourceType,
+        url: input.task.url,
+        excerpt,
+        extractedValue,
+        confidence: Math.max(0, Math.min(1, confidence)),
+        capturedAt:
+          typeof rawItem.capturedAt === "string" && rawItem.capturedAt.trim()
+            ? rawItem.capturedAt.trim()
+            : fallbackCapturedAt
+      } satisfies Evidence;
+    })
+    .filter((item): item is Evidence => Boolean(item));
+
+  if (evidence.length === 0) {
+    throw new Error("Evidence extraction validation failed.");
+  }
+
+  return evidence;
+}
+
+async function repairEvidencePayloadViaChatCompletions(raw: string) {
+  const response = await getOpenAIClient().chat.completions.create({
+    model: getEvidenceModel(),
+    messages: [
+      {
+        role: "system",
+        content: [
+          "Repair the provided invalid JSON into valid JSON.",
+          "Return exactly one object with an evidence array.",
+          "Keep the original evidence text as much as possible.",
+          "Do not add markdown fences or extra explanation."
+        ].join(" ")
+      },
+      {
+        role: "user",
+        content: raw
+      }
+    ]
+  });
+
+  const content = response.choices[0]?.message?.content;
+
+  if (typeof content !== "string" || !content.trim()) {
+    throw new Error("Evidence repair response was empty.");
+  }
+
+  return content;
+}
+
 function buildStructuredEvidenceInput(input: ExtractEvidenceInput) {
   return {
     candidate: {
@@ -135,7 +237,25 @@ async function extractEvidenceViaChatCompletions(input: ExtractEvidenceInput) {
     throw new Error("Evidence extraction response was empty.");
   }
 
-  return parseEvidencePayload(content);
+  try {
+    return parseEvidencePayload(content);
+  } catch (strictError) {
+    try {
+      return parseLenientEvidencePayload(input, content);
+    } catch {
+      const repairedContent = await repairEvidencePayloadViaChatCompletions(content);
+
+      try {
+        return parseEvidencePayload(repairedContent);
+      } catch {
+        try {
+          return parseLenientEvidencePayload(input, repairedContent);
+        } catch {
+          throw strictError;
+        }
+      }
+    }
+  }
 }
 
 export async function extractEvidence(input: ExtractEvidenceInput) {

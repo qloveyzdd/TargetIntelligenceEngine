@@ -16,6 +16,64 @@ const sourcePriority: Record<SourceType, number> = {
   review: 3
 };
 
+function getPreferredSourceTypes(evidenceNeeded: string[]) {
+  const normalized = evidenceNeeded.map((item) => item.trim().toLowerCase());
+  const needsPricing = normalized.some((item) =>
+    ["pricing", "price", "cost", "plan", "billing", "seat"].some((keyword) =>
+      item.includes(keyword)
+    )
+  );
+  const needsDocs = normalized.some((item) =>
+    [
+      "doc",
+      "guide",
+      "api",
+      "integration",
+      "permission",
+      "deployment",
+      "security",
+      "workflow",
+      "automation",
+      "uptime",
+      "sla"
+    ].some((keyword) => item.includes(keyword))
+  );
+
+  if (needsPricing) {
+    return ["pricing", "official_site", "docs", "review"] satisfies SourceType[];
+  }
+
+  if (needsDocs) {
+    return ["docs", "official_site", "pricing", "review"] satisfies SourceType[];
+  }
+
+  return ["official_site", "docs", "pricing", "review"] satisfies SourceType[];
+}
+
+function pickBestSourceForDimension(
+  sources: Array<{ sourceType: SourceType; url: string }>,
+  dimension: Dimension
+) {
+  const sourceTypeOrder = getPreferredSourceTypes(dimension.evidenceNeeded);
+
+  return [...sources].sort((left, right) => {
+    const preferredDiff =
+      sourceTypeOrder.indexOf(left.sourceType) - sourceTypeOrder.indexOf(right.sourceType);
+
+    if (preferredDiff !== 0) {
+      return preferredDiff;
+    }
+
+    const priority = sourcePriority[left.sourceType] - sourcePriority[right.sourceType];
+
+    if (priority !== 0) {
+      return priority;
+    }
+
+    return left.url.localeCompare(right.url);
+  })[0];
+}
+
 function normalizeUrl(value: string) {
   try {
     const url = new URL(value);
@@ -54,23 +112,27 @@ export function buildEvidenceSourceTasks(input: {
     });
 
     for (const dimension of enabledDimensions) {
-      for (const source of sources) {
-        const normalizedUrl = normalizeUrl(source.url);
-        const key = `${candidate.id}:${dimension.id}:${normalizedUrl}`;
+      const source = pickBestSourceForDimension(sources, dimension);
 
-        if (seen.has(key)) {
-          continue;
-        }
-
-        seen.add(key);
-        tasks.push({
-          candidateId: candidate.id,
-          candidateName: candidate.name,
-          dimensionId: dimension.id,
-          sourceType: source.sourceType,
-          url: normalizedUrl
-        });
+      if (!source) {
+        continue;
       }
+
+      const normalizedUrl = normalizeUrl(source.url);
+      const key = `${candidate.id}:${dimension.id}:${normalizedUrl}`;
+
+      if (seen.has(key)) {
+        continue;
+      }
+
+      seen.add(key);
+      tasks.push({
+        candidateId: candidate.id,
+        candidateName: candidate.name,
+        dimensionId: dimension.id,
+        sourceType: source.sourceType,
+        url: normalizedUrl
+      });
     }
   }
 

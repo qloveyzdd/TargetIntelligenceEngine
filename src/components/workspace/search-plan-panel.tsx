@@ -1,7 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
+import type { CSSProperties } from "react";
+import { useState, useTransition } from "react";
 import type { AnalysisRun, SearchPlanItem } from "@/features/analysis-run/types";
+import { ActionFeedback } from "./action-feedback";
 
 type SearchPlanPanelProps = {
   run: AnalysisRun;
@@ -13,28 +15,49 @@ function groupItems(items: SearchPlanItem[], mode: SearchPlanItem["mode"]) {
 }
 
 export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
+  const [error, setError] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<"generate" | "regenerate" | "confirm" | null>(
+    null
+  );
   const [isPending, startTransition] = useTransition();
   const searchPlan = run.searchPlan;
   const dimensionNames = new Map(run.dimensions.map((dimension) => [dimension.id, dimension.name]));
 
   function generateSearchPlan(forceRegenerate = false) {
+    setError(null);
+    setPendingAction(forceRegenerate ? "regenerate" : "generate");
+
     startTransition(() => {
       void (async () => {
-        const response = await fetch(`/api/runs/${run.id}/search-plan`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            forceRegenerate
-          })
-        });
-        const payload = (await response.json()) as {
-          run?: AnalysisRun;
-        };
+        try {
+          const response = await fetch(`/api/runs/${run.id}/search-plan`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              forceRegenerate
+            })
+          });
+          const payload = (await response.json()) as {
+            error?: string;
+            run?: AnalysisRun;
+          };
 
-        if (payload.run) {
+          if (!response.ok || !payload.run) {
+            setError(payload.error ?? "生成搜索计划失败。");
+            setPendingAction(null);
+            return;
+          }
+
           onRunChanged(payload.run);
+        } catch (generationError) {
+          setError(
+            generationError instanceof Error
+              ? generationError.message
+              : "生成搜索计划失败。"
+          );
+          setPendingAction(null);
         }
       })();
     });
@@ -45,27 +68,70 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
       return;
     }
 
+    setError(null);
+    setPendingAction("confirm");
+
     startTransition(() => {
       void (async () => {
-        const response = await fetch(`/api/runs/${run.id}/search-plan`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            searchPlan
-          })
-        });
-        const payload = (await response.json()) as {
-          run?: AnalysisRun;
-        };
+        try {
+          const response = await fetch(`/api/runs/${run.id}/search-plan`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              searchPlan
+            })
+          });
+          const payload = (await response.json()) as {
+            error?: string;
+            run?: AnalysisRun;
+          };
 
-        if (payload.run) {
+          if (!response.ok || !payload.run) {
+            setError(payload.error ?? "确认搜索计划失败。");
+            setPendingAction(null);
+            return;
+          }
+
           onRunChanged(payload.run);
+        } catch (confirmError) {
+          setError(
+            confirmError instanceof Error ? confirmError.message : "确认搜索计划失败。"
+          );
+          setPendingAction(null);
         }
       })();
     });
   }
+
+  const feedback =
+    error
+      ? { tone: "error" as const, message: error }
+      : isPending
+        ? {
+            tone: "pending" as const,
+            message:
+              pendingAction === "confirm"
+                ? "正在确认搜索计划，请稍候……"
+                : pendingAction === "regenerate"
+                  ? "正在重新生成搜索计划，请稍候……"
+                  : "正在生成搜索计划，请稍候……"
+          }
+        : searchPlan?.status === "confirmed"
+          ? {
+              tone: "success" as const,
+              message: "搜索计划已确认，可继续生成候选。"
+            }
+          : searchPlan
+            ? {
+                tone: "success" as const,
+                message: "搜索计划草稿已生成，请确认后进入候选召回。"
+              }
+            : {
+                tone: "neutral" as const,
+                message: "点击“生成搜索计划”后，这里会显示处理进度和确认状态。"
+              };
 
   if (
     run.status !== "dimensions_ready" &&
@@ -76,7 +142,7 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
   ) {
     return (
       <p style={styles.waiting}>
-        检索计划要等维度草稿保存为 `dimensions_ready` 后才可用。
+        搜索计划要等维度保存为 `dimensions_ready` 后才可用。
       </p>
     );
   }
@@ -85,7 +151,7 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
     return (
       <div style={styles.emptyState}>
         <p style={styles.waiting}>
-          维度确认后再生成检索计划草稿。这里展示的是“接下来要搜什么、为什么搜”，不是候选结果本身。
+          维度确认后再生成搜索计划草稿。这里展示的是“接下来要搜什么、为什么搜”，不是候选结果本身。
         </p>
         <button
           type="button"
@@ -94,8 +160,9 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
           disabled={isPending}
           data-testid="generate-search-plan"
         >
-          {isPending ? "生成中..." : "生成检索计划"}
+          {isPending ? "生成中..." : "生成搜索计划"}
         </button>
+        <ActionFeedback tone={feedback.tone} message={feedback.message} />
       </div>
     );
   }
@@ -107,8 +174,9 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
     <div style={styles.wrapper} data-testid="search-plan-panel">
       <div style={styles.toolbar}>
         <p style={styles.waiting}>
-          在 Phase 3 真正开始召回候选之前，先确认这份草稿。这里关注的是检索计划，不是候选结果。
+          在真正开始召回候选之前，先确认这份搜索计划草稿。
         </p>
+        <ActionFeedback tone={feedback.tone} message={feedback.message} />
         <div style={styles.actions}>
           <button
             type="button"
@@ -126,15 +194,16 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
             disabled={isPending || searchPlan.status === "confirmed"}
             data-testid="confirm-search-plan"
           >
-            {searchPlan.status === "confirmed" ? "检索计划已确认" : isPending ? "确认中..." : "确认检索计划"}
+            {searchPlan.status === "confirmed"
+              ? "搜索计划已确认"
+              : isPending
+                ? "确认中..."
+                : "确认搜索计划"}
           </button>
         </div>
       </div>
 
-      <section
-        style={styles.group}
-        data-testid="search-plan-group-same_goal"
-      >
+      <section style={styles.group} data-testid="search-plan-group-same_goal">
         <h3 style={styles.groupTitle}>同目标检索</h3>
         <div style={styles.grid}>
           {sameGoalItems.map((item) => (
@@ -153,10 +222,7 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
         </div>
       </section>
 
-      <section
-        style={styles.group}
-        data-testid="search-plan-group-dimension_leader"
-      >
+      <section style={styles.group} data-testid="search-plan-group-dimension_leader">
         <h3 style={styles.groupTitle}>维度冠军检索</h3>
         <div style={styles.grid}>
           {leaderItems.map((item) => (
@@ -244,4 +310,4 @@ const styles = {
     cursor: "pointer",
     padding: "12px 18px"
   }
-} satisfies Record<string, React.CSSProperties>;
+} satisfies Record<string, CSSProperties>;

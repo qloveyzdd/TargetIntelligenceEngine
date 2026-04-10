@@ -1,8 +1,10 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useState, useTransition } from "react";
 import type { AnalysisRun, Candidate } from "@/features/analysis-run/types";
 import { DEEP_DIVE_LIMIT } from "@/features/candidate-recall/select-top-candidates";
+import { ActionFeedback } from "./action-feedback";
 
 type CandidatesPanelProps = {
   run: AnalysisRun;
@@ -23,10 +25,12 @@ function isDeepDiveCandidate(candidate: Candidate) {
 
 export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
   const [error, setError] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<"generate" | "regenerate" | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function generateCandidates(forceRegenerate = false) {
     setError(null);
+    setPendingAction(forceRegenerate ? "regenerate" : "generate");
 
     startTransition(() => {
       void (async () => {
@@ -47,6 +51,7 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
 
           if (!response.ok || !payload.run) {
             setError(payload.error ?? "生成候选失败。");
+            setPendingAction(null);
             return;
           }
 
@@ -57,15 +62,40 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
               ? generationError.message
               : "生成候选失败。"
           );
+          setPendingAction(null);
         }
       })();
     });
   }
 
+  const feedback =
+    error
+      ? { tone: "error" as const, message: error }
+      : isPending
+        ? {
+            tone: "pending" as const,
+            message:
+              pendingAction === "regenerate"
+                ? "正在重新生成候选，请稍候……"
+                : "正在生成候选，请稍候……"
+          }
+        : run.candidates.length > 0
+          ? {
+              tone: "success" as const,
+              message:
+                run.evidence.length > 0
+                  ? "候选已生成，当前可以查看证据或重新召回。"
+                  : "候选已生成，可继续采集证据。"
+            }
+          : {
+              tone: "neutral" as const,
+              message: "点击“生成候选”后，这里会显示召回进度和完成状态。"
+            };
+
   if (!canShowCandidatePanel(run.status)) {
     return (
       <p style={styles.waiting}>
-        候选列表要等检索计划确认成 `search_plan_confirmed` 后才可用。
+        候选列表要等搜索计划确认为 `search_plan_confirmed` 后才可用。
       </p>
     );
   }
@@ -74,7 +104,7 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
     return (
       <div style={styles.emptyState}>
         <p style={styles.waiting}>
-          检索计划确认后，就可以生成候选召回。这里会产出有序候选列表，并标记前 5 个深挖对象供证据采集使用。
+          搜索计划确认后，就可以生成候选召回。这里会产出有序候选列表，并标记前 5 个深挖对象供证据采集使用。
         </p>
         <button
           type="button"
@@ -85,7 +115,7 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
         >
           {isPending ? "生成中..." : "生成候选"}
         </button>
-        {error ? <p style={styles.error}>{error}</p> : null}
+        <ActionFeedback tone={feedback.tone} message={feedback.message} />
       </div>
     );
   }
@@ -94,8 +124,9 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
     <div style={styles.wrapper} data-testid="candidates-panel">
       <div style={styles.toolbar}>
         <p style={styles.waiting}>
-          候选召回结果会持久化在当前运行上。带有“深挖集合”标记的条目，才会进入 Phase 3 的证据采集。
+          带有“深挖集合”标记的候选，会进入下一步证据采集。
         </p>
+        <ActionFeedback tone={feedback.tone} message={feedback.message} />
         <button
           type="button"
           style={styles.secondaryButton}
@@ -116,10 +147,10 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
           >
             <div style={styles.cardHeader}>
               <div>
-                <strong>{candidate.recallRank}. {candidate.name}</strong>
-                <p style={styles.meta}>
-                  模式：{candidate.matchedModes.join(", ")}
-                </p>
+                <strong>
+                  {candidate.recallRank}. {candidate.name}
+                </strong>
+                <p style={styles.meta}>模式：{candidate.matchedModes.join(", ")}</p>
               </div>
               {isDeepDiveCandidate(candidate) ? (
                 <span style={styles.deepDiveBadge} data-testid="candidate-deep-dive-badge">
@@ -144,16 +175,12 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
                 {candidate.officialUrl}
               </a>
             ) : (
-              <p style={styles.meta}>暂未识别到官方链接。</p>
+              <p style={styles.meta}>暂未识别到官网链接。</p>
             )}
-            <p style={styles.meta}>
-              命中检索词：{candidate.matchedQueries.join(" | ")}
-            </p>
+            <p style={styles.meta}>命中检索词：{candidate.matchedQueries.join(" | ")}</p>
           </article>
         ))}
       </div>
-
-      {error ? <p style={styles.error}>{error}</p> : null}
     </div>
   );
 }
@@ -164,11 +191,8 @@ const styles = {
     gap: "16px"
   },
   toolbar: {
-    alignItems: "center",
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "12px",
-    justifyContent: "space-between"
+    display: "grid",
+    gap: "12px"
   },
   waiting: {
     color: "var(--text-muted)",
@@ -231,10 +255,7 @@ const styles = {
     border: "1px solid var(--card-border)",
     borderRadius: "999px",
     cursor: "pointer",
+    justifySelf: "start",
     padding: "12px 18px"
-  },
-  error: {
-    color: "#b12424",
-    margin: 0
   }
-} satisfies Record<string, React.CSSProperties>;
+} satisfies Record<string, CSSProperties>;

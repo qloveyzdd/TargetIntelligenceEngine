@@ -1,7 +1,9 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useState, useTransition } from "react";
 import type { AnalysisRun, Evidence } from "@/features/analysis-run/types";
+import { ActionFeedback } from "./action-feedback";
 
 type EvidencePanelProps = {
   run: AnalysisRun;
@@ -29,6 +31,7 @@ function groupEvidence(evidence: Evidence[]) {
 
 export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
   const [error, setError] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<"generate" | "regenerate" | null>(null);
   const [isPending, startTransition] = useTransition();
   const groupedEvidence = groupEvidence(run.evidence);
   const candidateNames = new Map(run.candidates.map((candidate) => [candidate.id, candidate.name]));
@@ -36,6 +39,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
 
   function generateEvidence(forceRegenerate = false) {
     setError(null);
+    setPendingAction(forceRegenerate ? "regenerate" : "generate");
 
     startTransition(() => {
       void (async () => {
@@ -56,6 +60,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
 
           if (!response.ok || !payload.run) {
             setError(payload.error ?? "生成证据失败。");
+            setPendingAction(null);
             return;
           }
 
@@ -66,10 +71,32 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
               ? generationError.message
               : "生成证据失败。"
           );
+          setPendingAction(null);
         }
       })();
     });
   }
+
+  const feedback =
+    error
+      ? { tone: "error" as const, message: error }
+      : isPending
+        ? {
+            tone: "pending" as const,
+            message:
+              pendingAction === "regenerate"
+                ? "正在重新生成证据，请稍候……"
+                : "正在采集证据，请稍候……"
+          }
+        : run.evidence.length > 0
+          ? {
+              tone: "success" as const,
+              message: "证据已生成，可继续进行评分。"
+            }
+          : {
+              tone: "neutral" as const,
+              message: "点击“生成证据”后，这里会显示采集进度和完成状态。"
+            };
 
   if (run.candidates.length === 0) {
     return (
@@ -102,7 +129,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
         >
           {isPending ? "生成中..." : "生成证据"}
         </button>
-        {error ? <p style={styles.error}>{error}</p> : null}
+        <ActionFeedback tone={feedback.tone} message={feedback.message} />
       </div>
     );
   }
@@ -111,8 +138,9 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
     <div style={styles.wrapper} data-testid="evidence-panel">
       <div style={styles.toolbar}>
         <p style={styles.waiting}>
-          证据会按候选和维度分组，每条记录都会保留来源链接和提取值。
+          证据会按候选和维度分组，每条记录都保留来源链接和提取值。
         </p>
+        <ActionFeedback tone={feedback.tone} message={feedback.message} />
         <button
           type="button"
           style={styles.secondaryButton}
@@ -161,9 +189,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
                           {record.url}
                         </a>
                         <p style={styles.body}>{record.excerpt}</p>
-                        <p style={styles.meta}>
-                          提取值：{record.extractedValue}
-                        </p>
+                        <p style={styles.meta}>提取值：{record.extractedValue}</p>
                       </div>
                     ))}
                   </div>
@@ -173,8 +199,6 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
           </section>
         ))}
       </div>
-
-      {error ? <p style={styles.error}>{error}</p> : null}
     </div>
   );
 }
@@ -185,11 +209,8 @@ const styles = {
     gap: "16px"
   },
   toolbar: {
-    alignItems: "center",
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "12px",
-    justifyContent: "space-between"
+    display: "grid",
+    gap: "12px"
   },
   waiting: {
     color: "var(--text-muted)",
@@ -261,10 +282,7 @@ const styles = {
     border: "1px solid var(--card-border)",
     borderRadius: "999px",
     cursor: "pointer",
+    justifySelf: "start",
     padding: "12px 18px"
-  },
-  error: {
-    color: "#b12424",
-    margin: 0
   }
-} satisfies Record<string, React.CSSProperties>;
+} satisfies Record<string, CSSProperties>;

@@ -37,4 +37,26 @@ describe("load page text", () => {
     expect(normalizePageText("<p>short</p>")).toBe("short");
     expect(shouldUseBrowserFallback("short")).toBe(true);
   });
+
+  it("returns empty text when fetch and browser fallback both fail", async () => {
+    const originalFetch = globalThis.fetch;
+    const fetchMock = vi.fn().mockRejectedValue(new Error("fetch failed"));
+
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    vi.doMock("playwright", () => ({
+      chromium: {
+        launch: vi.fn().mockRejectedValue(new Error("browser failed"))
+      }
+    }));
+
+    try {
+      const text = await loadPageText("https://example.com/unreachable");
+
+      expect(text).toBe("");
+    } finally {
+      globalThis.fetch = originalFetch;
+      vi.doUnmock("playwright");
+    }
+  });
 });

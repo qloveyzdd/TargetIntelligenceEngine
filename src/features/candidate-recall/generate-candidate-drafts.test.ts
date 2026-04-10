@@ -188,6 +188,101 @@ describe("generate candidate drafts", () => {
     expect(candidates[0]?.name).toBe("Perplexity");
   });
 
+  it("preserves kimi reasoning content across tool calls", async () => {
+    process.env.OPENAI_GOAL_MODEL = "kimi-k2.5";
+    process.env.OPENAI_BASE_URL = "https://api.moonshot.cn/v1";
+
+    const fetchMock = vi.fn();
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "web_search",
+                description: "Search the web",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    query: {
+                      type: "string"
+                    }
+                  },
+                  required: ["query"]
+                }
+              }
+            }
+          ]
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: "succeeded",
+          context: {
+            output: "search results"
+          }
+        })
+      });
+    vi.stubGlobal("fetch", fetchMock);
+    chatCompletionsCreate
+      .mockResolvedValueOnce({
+        choices: [
+          {
+            message: {
+              content: null,
+              reasoning_content: "先联网查一下同类产品。",
+              tool_calls: [
+                {
+                  id: "call-1",
+                  type: "function",
+                  function: {
+                    name: "web_search",
+                    arguments: '{"query":"target intelligence alternatives"}'
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                candidates: [
+                  {
+                    name: "Perplexity",
+                    officialUrl: "https://www.perplexity.ai",
+                    strengthDimensions: ["usability"],
+                    sources: [
+                      {
+                        sourceType: "official_site",
+                        url: "https://www.perplexity.ai"
+                      }
+                    ]
+                  }
+                ]
+              })
+            }
+          }
+        ]
+      });
+
+    await generateCandidateDrafts(buildInput());
+
+    const secondCall = chatCompletionsCreate.mock.calls[1]?.[0] as {
+      messages: Array<Record<string, unknown>>;
+    };
+    const assistantToolCallMessage = secondCall.messages[2];
+
+    expect(assistantToolCallMessage?.reasoning_content).toBe("先联网查一下同类产品。");
+    expect(assistantToolCallMessage?.tool_calls).toBeTruthy();
+  });
+
   it("injects the dimension id for dimension leader searches", async () => {
     process.env.MOCK_OPENAI = "true";
 

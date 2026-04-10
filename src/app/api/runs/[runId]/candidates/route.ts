@@ -22,45 +22,51 @@ function canGenerateCandidates(status: string) {
 }
 
 export async function POST(request: Request, context: RouteContext) {
-  const { runId } = await context.params;
-  const run = await getRunById(runId);
+  try {
+    const { runId } = await context.params;
+    const run = await getRunById(runId);
 
-  if (!run) {
-    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
-  }
+    if (!run) {
+      return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
+    }
 
-  if (
-    !run.goal ||
-    !run.searchPlan ||
-    run.searchPlan.status !== "confirmed" ||
-    !canGenerateCandidates(run.status)
-  ) {
-    return Response.json(
-      { error: "生成候选前，必须先确认检索计划。" },
-      { status: 400 }
+    if (
+      !run.goal ||
+      !run.searchPlan ||
+      run.searchPlan.status !== "confirmed" ||
+      !canGenerateCandidates(run.status)
+    ) {
+      return Response.json(
+        { error: "生成候选前，必须先确认搜索计划。" },
+        { status: 400 }
+      );
+    }
+
+    const body = (await request.json().catch(() => ({}))) as GenerateCandidatesRequest;
+
+    if (run.candidates.length > 0 && !body.forceRegenerate) {
+      return Response.json({ run });
+    }
+
+    const drafts = await Promise.all(
+      run.searchPlan.items.map((item) =>
+        generateCandidateDrafts({
+          goal: run.goal!,
+          item
+        })
+      )
     );
+    const candidates = selectTopCandidates(normalizeCandidates(drafts.flat()));
+    const nextRun = await updateRunAggregate(runId, {
+      status: "candidates_ready",
+      candidates,
+      evidence: []
+    });
+
+    return Response.json({ run: nextRun });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "生成候选失败。";
+
+    return Response.json({ error: message }, { status: 500 });
   }
-
-  const body = (await request.json().catch(() => ({}))) as GenerateCandidatesRequest;
-
-  if (run.candidates.length > 0 && !body.forceRegenerate) {
-    return Response.json({ run });
-  }
-
-  const drafts = await Promise.all(
-    run.searchPlan.items.map((item) =>
-      generateCandidateDrafts({
-        goal: run.goal!,
-        item
-      })
-    )
-  );
-  const candidates = selectTopCandidates(normalizeCandidates(drafts.flat()));
-  const nextRun = await updateRunAggregate(runId, {
-    status: "candidates_ready",
-    candidates,
-    evidence: []
-  });
-
-  return Response.json({ run: nextRun });
 }

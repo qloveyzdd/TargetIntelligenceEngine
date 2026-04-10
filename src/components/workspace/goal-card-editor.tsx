@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { AnalysisRun, GoalCard } from "@/features/analysis-run/types";
+import { ActionFeedback } from "./action-feedback";
 
 type GoalCardEditorProps = {
   run: AnalysisRun;
@@ -18,6 +19,7 @@ function linesToArray(value: string) {
 export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
   const [draft, setDraft] = useState<GoalCard | null>(run.goal);
   const [error, setError] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<"save" | "confirm" | null>(null);
   const [isPending, startTransition] = useTransition();
   const hardConstraints = draft?.hardConstraints.join("\n") ?? "";
   const softPreferences = draft?.softPreferences.join("\n") ?? "";
@@ -33,6 +35,7 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
     }
 
     setError(null);
+    setPendingAction(status === "goal_confirmed" ? "confirm" : "save");
 
     startTransition(() => {
       void (async () => {
@@ -56,12 +59,14 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
 
           if (!response.ok || !payload.run) {
             setError(payload.error ?? "保存 GoalCard 失败。");
+            setPendingAction(null);
             return;
           }
 
           onRunChanged(payload.run);
         } catch (saveError) {
           setError(saveError instanceof Error ? saveError.message : "保存 GoalCard 失败。");
+          setPendingAction(null);
         }
       })();
     });
@@ -70,6 +75,27 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
   if (!draft) {
     return null;
   }
+
+  const feedback =
+    error
+      ? { tone: "error" as const, message: error }
+      : isPending
+        ? {
+            tone: "pending" as const,
+            message:
+              pendingAction === "confirm"
+                ? "正在确认 GoalCard，请稍候……"
+                : "正在保存 GoalCard 草稿，请稍候……"
+          }
+        : run.status === "goal_confirmed"
+          ? {
+              tone: "success" as const,
+              message: "GoalCard 已确认，可继续生成维度草稿。"
+            }
+          : {
+              tone: "success" as const,
+              message: "GoalCard 草稿已就绪，可继续修改或直接确认。"
+            };
 
   return (
     <div style={styles.wrapper} data-testid="goal-card-editor">
@@ -175,6 +201,8 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
         </label>
       </div>
 
+      <ActionFeedback tone={feedback.tone} message={feedback.message} />
+
       <div style={styles.actions}>
         <button
           type="button"
@@ -194,7 +222,6 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
         >
           {isPending ? "确认中..." : "确认 GoalCard"}
         </button>
-        {error ? <p style={styles.error}>{error}</p> : null}
       </div>
     </div>
   );
@@ -252,9 +279,5 @@ const styles = {
     borderRadius: "999px",
     cursor: "pointer",
     padding: "12px 18px"
-  },
-  error: {
-    color: "#b12424",
-    margin: 0
   }
 } satisfies Record<string, React.CSSProperties>;

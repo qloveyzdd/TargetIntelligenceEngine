@@ -142,9 +142,9 @@ function getSearchModel() {
 function getMoonshotToolBaseURLs() {
   const configured = normalizeBaseURL(process.env.OPENAI_BASE_URL) ?? "";
   const aiFallback =
-    configured.includes("api.moonshot.cn") ?
-      configured.replace("api.moonshot.cn", "api.moonshot.ai")
-    : "";
+    configured.includes("api.moonshot.cn")
+      ? configured.replace("api.moonshot.cn", "api.moonshot.ai")
+      : "";
 
   return Array.from(
     new Set([configured, aiFallback, "https://api.moonshot.ai/v1"].filter(Boolean))
@@ -202,9 +202,9 @@ function toCandidate(draft: CandidateDraft, item: SearchPlanItem): Candidate {
     matchedModes: [item.mode],
     strengthDimensions: Array.from(
       new Set(
-        item.dimensionId ?
-          [...draft.strengthDimensions, item.dimensionId]
-        : draft.strengthDimensions
+        item.dimensionId
+          ? [...draft.strengthDimensions, item.dimensionId]
+          : draft.strengthDimensions
       )
     ),
     sources: draft.sources,
@@ -215,13 +215,13 @@ function toCandidate(draft: CandidateDraft, item: SearchPlanItem): Candidate {
 
 function buildMockDrafts(item: SearchPlanItem) {
   const keys =
-    item.mode === "same_goal" ?
-      ["openai-responses", "perplexity", "productboard"]
-    : item.dimensionId === "cost" ?
-      ["n8n", "posthog", "openai-responses"]
-    : item.dimensionId === "compliance" || item.dimensionId === "private-deployment" ?
-      ["open-webui", "posthog", "openai-responses"]
-    : ["openai-responses", "perplexity", "n8n"];
+    item.mode === "same_goal"
+      ? ["openai-responses", "perplexity", "productboard"]
+      : item.dimensionId === "cost"
+        ? ["n8n", "posthog", "openai-responses"]
+        : item.dimensionId === "compliance" || item.dimensionId === "private-deployment"
+          ? ["open-webui", "posthog", "openai-responses"]
+          : ["openai-responses", "perplexity", "n8n"];
 
   return keys.map((key) => mockCatalog[key]).filter(Boolean);
 }
@@ -302,7 +302,7 @@ async function runMoonshotFiber(input: {
     return output;
   }
 
-  return "Error: Kimi 联网工具没有返回可用内容。";
+  return "Error: Kimi web-search tool returned no usable output.";
 }
 
 async function generateCandidateDraftsViaResponses(input: GenerateCandidateDraftsInput) {
@@ -397,7 +397,31 @@ async function generateCandidateDraftsViaMoonshot(input: GenerateCandidateDrafts
     }
   ];
 
-  for (let round = 0; round < 4; round += 1) {
+  async function requestFinalJson() {
+    const response = await getOpenAIClient().chat.completions.create({
+      model: getSearchModel(),
+      messages: [
+        ...messages,
+        {
+          role: "system",
+          content: [
+            "You already have the available web search results in the conversation.",
+            "Do not call any more tools.",
+            "Now return the final candidate JSON only."
+          ].join(" ")
+        }
+      ]
+    });
+    const content = response.choices[0]?.message?.content;
+
+    if (typeof content !== "string" || !content.trim()) {
+      throw new Error("Candidate recall response was empty.");
+    }
+
+    return parseCandidateDrafts(content);
+  }
+
+  for (let round = 0; round < 6; round += 1) {
     const response = await getOpenAIClient().chat.completions.create({
       model: getSearchModel(),
       messages,
@@ -410,13 +434,10 @@ async function generateCandidateDraftsViaMoonshot(input: GenerateCandidateDrafts
     }
 
     if (message.tool_calls && message.tool_calls.length > 0) {
-      const assistantMessage: OpenAI.Chat.ChatCompletionAssistantMessageParam = {
-        role: "assistant",
-        content: typeof message.content === "string" ? message.content : null,
-        tool_calls: message.tool_calls
-      };
-
-      messages.push(assistantMessage);
+      // Kimi thinking models require the original assistant message, including
+      // runtime-only fields like reasoning_content, to be preserved across
+      // multi-step tool calls.
+      messages.push(message as unknown as OpenAI.Chat.ChatCompletionAssistantMessageParam);
 
       for (const toolCall of message.tool_calls) {
         if (toolCall.type !== "function") {
@@ -437,6 +458,14 @@ async function generateCandidateDraftsViaMoonshot(input: GenerateCandidateDrafts
         messages.push(toolMessage);
       }
 
+      try {
+        return await requestFinalJson();
+      } catch (finalizationError) {
+        if (round >= 5) {
+          throw finalizationError;
+        }
+      }
+
       continue;
     }
 
@@ -449,7 +478,7 @@ async function generateCandidateDraftsViaMoonshot(input: GenerateCandidateDrafts
     return parseCandidateDrafts(content);
   }
 
-  throw new Error("Kimi 联网候选召回超过最大工具轮次。");
+  return requestFinalJson();
 }
 
 export async function generateCandidateDrafts(input: GenerateCandidateDraftsInput) {

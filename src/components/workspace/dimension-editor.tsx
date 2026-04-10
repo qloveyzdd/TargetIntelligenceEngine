@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { AnalysisRun, Dimension } from "@/features/analysis-run/types";
+import { ActionFeedback } from "./action-feedback";
 
 type DimensionEditorProps = {
   run: AnalysisRun;
@@ -39,6 +40,9 @@ function formatDirectionLabel(direction: Dimension["direction"]) {
 export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
   const [draft, setDraft] = useState(run.dimensions);
   const [error, setError] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<"generate" | "regenerate" | "save" | null>(
+    null
+  );
   const [isPending, startTransition] = useTransition();
 
   function updateDimension(
@@ -54,6 +58,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
 
   function generateDraft(forceRegenerate = false) {
     setError(null);
+    setPendingAction(forceRegenerate ? "regenerate" : "generate");
 
     startTransition(() => {
       void (async () => {
@@ -74,6 +79,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
 
           if (!response.ok || !payload.run) {
             setError(payload.error ?? "生成维度草稿失败。");
+            setPendingAction(null);
             return;
           }
 
@@ -85,6 +91,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
               ? generationError.message
               : "生成维度草稿失败。"
           );
+          setPendingAction(null);
         }
       })();
     });
@@ -92,6 +99,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
 
   function saveDimensions() {
     setError(null);
+    setPendingAction("save");
 
     startTransition(() => {
       void (async () => {
@@ -112,6 +120,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
 
           if (!response.ok || !payload.run) {
             setError(payload.error ?? "保存维度失败。");
+            setPendingAction(null);
             return;
           }
 
@@ -119,6 +128,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
           onRunChanged(payload.run);
         } catch (saveError) {
           setError(saveError instanceof Error ? saveError.message : "保存维度失败。");
+          setPendingAction(null);
         }
       })();
     });
@@ -127,6 +137,34 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
   if (!run.goal) {
     return null;
   }
+
+  const feedback =
+    error
+      ? { tone: "error" as const, message: error }
+      : isPending
+        ? {
+            tone: "pending" as const,
+            message:
+              pendingAction === "save"
+                ? "正在保存维度，请稍候……"
+                : pendingAction === "regenerate"
+                  ? "正在重新生成维度草稿，请稍候……"
+                  : "正在生成维度草稿，请稍候……"
+          }
+        : run.status === "dimensions_ready"
+          ? {
+              tone: "success" as const,
+              message: "维度已保存，可继续生成搜索计划。"
+            }
+          : hasDynamicDimensions(draft)
+            ? {
+                tone: "success" as const,
+                message: "维度草稿已生成，可调整后保存。"
+              }
+            : {
+                tone: "neutral" as const,
+                message: "点击“生成维度草稿”后，这里会显示生成进度和完成状态。"
+              };
 
   if (!hasDynamicDimensions(draft)) {
     return (
@@ -143,7 +181,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
         >
           {isPending ? "生成中..." : "生成维度草稿"}
         </button>
-        {error ? <p style={styles.error}>{error}</p> : null}
+        <ActionFeedback tone={feedback.tone} message={feedback.message} />
       </div>
     );
   }
@@ -154,6 +192,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
         <p style={styles.helper}>
           确认前可调整 `weight`、`direction`、`definition`、`evidenceNeeded` 和 `enabled`。
         </p>
+        <ActionFeedback tone={feedback.tone} message={feedback.message} />
         <div style={styles.actions}>
           <button
             type="button"
@@ -276,8 +315,6 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
           </article>
         ))}
       </div>
-
-      {error ? <p style={styles.error}>{error}</p> : null}
     </div>
   );
 }
@@ -373,9 +410,5 @@ const styles = {
     borderRadius: "999px",
     cursor: "pointer",
     padding: "12px 18px"
-  },
-  error: {
-    color: "#b12424",
-    margin: 0
   }
 } satisfies Record<string, React.CSSProperties>;

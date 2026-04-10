@@ -45,6 +45,7 @@ export async function POST(request: Request, context: RouteContext) {
     });
     const dimensionsById = new Map(run.dimensions.map((dimension) => [dimension.id, dimension]));
     const candidatesById = new Map(run.candidates.map((candidate) => [candidate.id, candidate]));
+    const pageTextCache = new Map<string, string>();
     const evidence = [];
 
     for (const task of tasks) {
@@ -55,20 +56,38 @@ export async function POST(request: Request, context: RouteContext) {
         continue;
       }
 
-      const pageText = await loadPageText(task.url);
+      let pageText = pageTextCache.get(task.url);
+
+      if (pageText === undefined) {
+        pageText = await loadPageText(task.url);
+        pageTextCache.set(task.url, pageText);
+      }
 
       if (!pageText.trim()) {
         continue;
       }
 
-      evidence.push(
-        ...(await extractEvidence({
-          candidate,
-          dimension,
-          task,
-          pageText
-        }))
-      );
+      try {
+        evidence.push(
+          ...(await extractEvidence({
+            candidate,
+            dimension,
+            task,
+            pageText
+          }))
+        );
+      } catch (error) {
+        console.warn(
+          "[evidence] skip task",
+          JSON.stringify({
+            candidateId: task.candidateId,
+            dimensionId: task.dimensionId,
+            sourceType: task.sourceType,
+            url: task.url,
+            message: error instanceof Error ? error.message : "unknown error"
+          })
+        );
+      }
     }
 
     const nextRun = await updateRunAggregate(runId, {

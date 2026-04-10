@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import { useState, useTransition } from "react";
 import type { AnalysisRun } from "@/features/analysis-run/types";
 import type { StageGoalHandoff } from "@/features/stage-goals/build-stage-goal-handoff";
+import { ActionFeedback } from "./action-feedback";
 
 type StageGoalsPanelProps = {
   run: AnalysisRun;
@@ -94,13 +95,16 @@ function formatStageLabel(value: string) {
 export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [handoffError, setHandoffError] = useState<string | null>(null);
-  const [copyMessage, setCopyMessage] = useState("可以复制交接结果。");
+  const [copyMessage, setCopyMessage] = useState("点击预览或复制后，这里会显示交接结果状态。");
   const [handoff, setHandoff] = useState<StageGoalHandoff | null>(null);
+  const [pendingAction, setPendingAction] = useState<"generate" | "regenerate" | null>(null);
+  const [handoffAction, setHandoffAction] = useState<"preview" | "copy" | null>(null);
   const [isGeneratingPending, startGenerateTransition] = useTransition();
   const [isHandoffPending, startHandoffTransition] = useTransition();
 
   function handleGenerateStageGoals(forceRegenerate = false) {
     setError(null);
+    setPendingAction(forceRegenerate ? "regenerate" : "generate");
 
     startGenerateTransition(() => {
       void (async () => {
@@ -117,6 +121,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
               ? generationError.message
               : "生成阶段目标失败。"
           );
+          setPendingAction(null);
         }
       })();
     });
@@ -124,6 +129,8 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
 
   function handlePreviewHandoff() {
     setHandoffError(null);
+    setCopyMessage("正在加载交接结果，请稍候……");
+    setHandoffAction("preview");
 
     startHandoffTransition(() => {
       void (async () => {
@@ -133,10 +140,12 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
           });
 
           setHandoff(nextHandoff);
+          setCopyMessage("交接结果已加载，可直接复制给下一轮规划使用。");
         } catch (previewError) {
           setHandoffError(
             previewError instanceof Error ? previewError.message : "加载交接结果失败。"
           );
+          setHandoffAction(null);
         }
       })();
     });
@@ -144,7 +153,8 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
 
   function handleCopyHandoff() {
     setHandoffError(null);
-    setCopyMessage("复制中...");
+    setCopyMessage("正在复制交接结果，请稍候……");
+    setHandoffAction("copy");
 
     startHandoffTransition(() => {
       void (async () => {
@@ -159,15 +169,62 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
           setHandoff(nextHandoff);
 
           const copied = await copyToClipboard(handoffText);
-          setCopyMessage(copied ? "已复制交接结果。" : "当前环境不支持剪贴板，请直接查看下方预览。");
+          setCopyMessage(
+            copied
+              ? "已复制交接结果。"
+              : "当前环境不支持剪贴板，请直接查看下方预览。"
+          );
         } catch (copyError) {
           setHandoffError(
             copyError instanceof Error ? copyError.message : "复制交接结果失败。"
           );
+          setHandoffAction(null);
         }
       })();
     });
   }
+
+  const generationFeedback =
+    error
+      ? { tone: "error" as const, message: error }
+      : isGeneratingPending
+        ? {
+            tone: "pending" as const,
+            message:
+              pendingAction === "regenerate"
+                ? "正在重新生成阶段目标，请稍候……"
+                : "正在生成阶段目标，请稍候……"
+          }
+        : run.stageGoals.length > 0
+          ? {
+              tone: "success" as const,
+              message: "阶段目标已生成，可继续预览或复制交接结果。"
+            }
+          : {
+              tone: "neutral" as const,
+              message: "点击“生成阶段目标”后，这里会显示进度和完成状态。"
+            };
+
+  const handoffFeedback =
+    handoffError
+      ? { tone: "error" as const, message: handoffError }
+      : isHandoffPending
+        ? {
+            tone: "pending" as const,
+            message:
+              handoffAction === "copy"
+                ? "正在准备并复制交接结果，请稍候……"
+                : "正在加载交接结果，请稍候……"
+          }
+        : handoff
+          ? {
+              tone: "success" as const,
+              message: copyMessage
+            }
+          : {
+              tone: "neutral" as const,
+              message: copyMessage
+            };
 
   if (!run.scoring) {
     return (
@@ -192,7 +249,10 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
         >
           {isGeneratingPending ? "生成中..." : "生成阶段目标"}
         </button>
-        {error ? <p style={styles.error}>{error}</p> : null}
+        <ActionFeedback
+          tone={generationFeedback.tone}
+          message={generationFeedback.message}
+        />
       </div>
     );
   }
@@ -201,8 +261,12 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
     <div style={styles.wrapper} data-testid="stage-goals-panel">
       <div style={styles.toolbar}>
         <p style={styles.waiting}>
-          阶段目标会持久化在当前运行上，并可导出成结构化交接结果，供后续规划继续使用。
+          阶段目标会持久化在当前运行上，并可导出成结构化交接结果。
         </p>
+        <ActionFeedback
+          tone={generationFeedback.tone}
+          message={generationFeedback.message}
+        />
         <div style={styles.buttonGroup}>
           <button
             type="button"
@@ -220,7 +284,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
             disabled={isHandoffPending}
             data-testid="preview-stage-goal-handoff"
           >
-            {isHandoffPending ? "加载中..." : "预览交接结果"}
+            {isHandoffPending && handoffAction === "preview" ? "加载中..." : "预览交接结果"}
           </button>
           <button
             type="button"
@@ -229,9 +293,10 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
             disabled={isHandoffPending}
             data-testid="copy-stage-goal-handoff"
           >
-            {isHandoffPending ? "复制中..." : "复制交接结果"}
+            {isHandoffPending && handoffAction === "copy" ? "复制中..." : "复制交接结果"}
           </button>
         </div>
+        <ActionFeedback tone={handoffFeedback.tone} message={handoffFeedback.message} />
       </div>
 
       <div style={styles.grid}>
@@ -276,12 +341,6 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
           <pre style={styles.pre}>{JSON.stringify(handoff, null, 2)}</pre>
         </div>
       ) : null}
-
-      <p style={styles.meta} data-testid="stage-goal-copy-status">
-        {copyMessage}
-      </p>
-      {error ? <p style={styles.error}>{error}</p> : null}
-      {handoffError ? <p style={styles.error}>{handoffError}</p> : null}
     </div>
   );
 }
@@ -292,11 +351,8 @@ const styles = {
     gap: "16px"
   },
   toolbar: {
-    alignItems: "center",
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "12px",
-    justifyContent: "space-between"
+    display: "grid",
+    gap: "12px"
   },
   buttonGroup: {
     display: "flex",
@@ -376,9 +432,5 @@ const styles = {
     borderRadius: "999px",
     cursor: "pointer",
     padding: "12px 18px"
-  },
-  error: {
-    color: "#b12424",
-    margin: 0
   }
 } satisfies Record<string, CSSProperties>;

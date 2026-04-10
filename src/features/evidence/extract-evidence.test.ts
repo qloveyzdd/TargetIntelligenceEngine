@@ -149,4 +149,75 @@ describe("extract evidence", () => {
     expect(chatCompletionsCreate).toHaveBeenCalledOnce();
     expect(evidence[0]?.confidence).toBe(0.88);
   });
+
+  it("accepts lenient kimi evidence payloads and fills required fields", async () => {
+    process.env.OPENAI_BASE_URL = "https://api.moonshot.cn/v1";
+    process.env.OPENAI_GOAL_MODEL = "kimi-k2.5";
+    chatCompletionsCreate.mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              evidence: [
+                {
+                  excerpt: "Productboard helps teams align around customer needs.",
+                  value: "align around customer needs",
+                  confidence: "0.76"
+                }
+              ]
+            })
+          }
+        }
+      ]
+    });
+
+    const evidence = await extractEvidence(buildInput());
+
+    expect(evidence).toHaveLength(1);
+    expect(evidence[0]?.candidateId).toBe("productboard-com");
+    expect(evidence[0]?.dimensionId).toBe("usability");
+    expect(evidence[0]?.sourceType).toBe("official_site");
+    expect(evidence[0]?.url).toBe("https://www.productboard.com");
+    expect(evidence[0]?.confidence).toBe(0.76);
+  });
+
+  it("repairs invalid kimi json before giving up", async () => {
+    process.env.OPENAI_BASE_URL = "https://api.moonshot.cn/v1";
+    process.env.OPENAI_GOAL_MODEL = "kimi-k2.5";
+    chatCompletionsCreate
+      .mockResolvedValueOnce({
+        choices: [
+          {
+            message: {
+              content:
+                '{"evidence":[{"excerpt":"bad "quote" payload","value":"fixed value","confidence":0.7}]}'
+            }
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                evidence: [
+                  {
+                    excerpt: 'bad "quote" payload',
+                    extractedValue: "fixed value",
+                    confidence: 0.7
+                  }
+                ]
+              })
+            }
+          }
+        ]
+      });
+
+    const evidence = await extractEvidence(buildInput());
+
+    expect(chatCompletionsCreate).toHaveBeenCalledTimes(2);
+    expect(evidence).toHaveLength(1);
+    expect(evidence[0]?.excerpt).toBe('bad "quote" payload');
+    expect(evidence[0]?.confidence).toBe(0.7);
+  });
 });

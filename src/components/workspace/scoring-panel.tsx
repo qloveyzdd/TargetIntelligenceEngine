@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { AnalysisRun } from "@/features/analysis-run/types";
+import { ActionFeedback } from "./action-feedback";
 
 type ScoringPanelProps = {
   run: AnalysisRun;
@@ -30,6 +31,27 @@ export function ScoringPanel({
   const dimensionNames = new Map(run.dimensions.map((dimension) => [dimension.id, dimension.name]));
   const evidenceById = new Map(run.evidence.map((record) => [record.id, record]));
 
+  const feedback =
+    error
+      ? { tone: "error" as const, message: error }
+      : isPending
+        ? {
+            tone: "pending" as const,
+            message: run.scoring ? "正在重新生成评分，请稍候……" : "正在生成评分，请稍候……"
+          }
+        : run.scoring
+          ? {
+              tone: "success" as const,
+              message:
+                run.stageGoals.length > 0
+                  ? "评分已生成，阶段目标也已可用。"
+                  : "评分已生成，可查看差距并继续生成阶段目标。"
+            }
+          : {
+              tone: "neutral" as const,
+              message: "点击“生成评分”后，这里会显示处理进度和完成状态。"
+            };
+
   if (run.evidence.length === 0) {
     return (
       <p style={styles.waiting}>
@@ -42,7 +64,7 @@ export function ScoringPanel({
     return (
       <div style={styles.emptyState} data-testid="scoring-empty-state">
         <p style={styles.waiting}>
-          生成评分后，证据会被转成维度评分卡、整体覆盖率和差距优先级。
+          生成评分后，证据会被转换成维度评分卡、整体覆盖率和差距优先级。
         </p>
         <button
           type="button"
@@ -53,7 +75,7 @@ export function ScoringPanel({
         >
           {isPending ? "生成中..." : "生成评分"}
         </button>
-        {error ? <p style={styles.error}>{error}</p> : null}
+        <ActionFeedback tone={feedback.tone} message={feedback.message} />
       </div>
     );
   }
@@ -64,6 +86,7 @@ export function ScoringPanel({
         <p style={styles.waiting}>
           评分坚持 evidence-first：每张评分卡和每条差距记录都会保留对应的证据 ID。
         </p>
+        <ActionFeedback tone={feedback.tone} message={feedback.message} />
         <button
           type="button"
           style={styles.secondaryButton}
@@ -119,7 +142,8 @@ export function ScoringPanel({
                         dimensionScorecard.dimensionId}
                     </span>
                     <span>
-                      {formatScore(dimensionScorecard.score)} | {formatScoreStatus(dimensionScorecard.status)}
+                      {formatScore(dimensionScorecard.score)} |{" "}
+                      {formatScoreStatus(dimensionScorecard.status)}
                     </span>
                   </summary>
                   <div style={styles.detailsBody}>
@@ -142,8 +166,8 @@ export function ScoringPanel({
                             data-testid="score-contribution"
                           >
                             <p style={styles.meta}>
-                              {contribution.evidenceId} | {formatScoreStatus(contribution.status)} | 权重{" "}
-                              {contribution.contributionWeight.toFixed(3)}
+                              {contribution.evidenceId} | {formatScoreStatus(contribution.status)} |
+                              权重 {contribution.contributionWeight.toFixed(3)}
                             </p>
                             <p style={styles.body}>{contribution.summary}</p>
                             {evidence ? (
@@ -167,9 +191,7 @@ export function ScoringPanel({
         <div style={styles.summaryRow}>
           <div>
             <h3 style={styles.cardTitle}>差距优先级</h3>
-            <p style={styles.meta}>
-              按加权差距大小排序的基准维度。
-            </p>
+            <p style={styles.meta}>按加权差距大小排序的基准维度。</p>
           </div>
           <span style={styles.badge} data-testid="gap-count">
             {run.scoring.gaps.length} 条差距
@@ -185,7 +207,9 @@ export function ScoringPanel({
               <summary style={styles.summary} data-testid="gap-toggle">
                 <span>{dimensionNames.get(gap.dimensionId) ?? gap.dimensionId}</span>
                 <span>
-                  {gap.status === "unknown" ? "未知" : `${gap.priority?.toFixed(1) ?? "0.0"} 优先级`}
+                  {gap.status === "unknown"
+                    ? "未知"
+                    : `${gap.priority?.toFixed(1) ?? "0.0"} 优先级`}
                 </span>
               </summary>
               <div style={styles.detailsBody}>
@@ -214,8 +238,6 @@ export function ScoringPanel({
           ))}
         </div>
       </section>
-
-      {error ? <p style={styles.error}>{error}</p> : null}
     </div>
   );
 }
@@ -226,11 +248,8 @@ const styles = {
     gap: "16px"
   },
   toolbar: {
-    alignItems: "center",
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "12px",
-    justifyContent: "space-between"
+    display: "grid",
+    gap: "12px"
   },
   waiting: {
     color: "var(--text-muted)",
@@ -341,10 +360,7 @@ const styles = {
     border: "1px solid var(--card-border)",
     borderRadius: "999px",
     cursor: "pointer",
+    justifySelf: "start",
     padding: "12px 18px"
-  },
-  error: {
-    color: "#b12424",
-    margin: 0
   }
 } satisfies Record<string, CSSProperties>;

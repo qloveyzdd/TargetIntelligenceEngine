@@ -28,53 +28,59 @@ function canGenerateSearchPlan(status: string) {
 }
 
 export async function POST(request: Request, context: RouteContext) {
-  const { runId } = await context.params;
-  const run = await getRunById(runId);
+  try {
+    const { runId } = await context.params;
+    const run = await getRunById(runId);
 
-  if (!run) {
-    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
-  }
+    if (!run) {
+      return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
+    }
 
-  if (!run.goal || !canGenerateSearchPlan(run.status)) {
-    return Response.json(
-      { error: "生成检索计划前，必须先确认维度。" },
-      { status: 400 }
+    if (!run.goal || !canGenerateSearchPlan(run.status)) {
+      return Response.json(
+        { error: "生成搜索计划前，必须先确认维度。" },
+        { status: 400 }
+      );
+    }
+
+    const enabledDimensions = run.dimensions.filter((dimension) => dimension.enabled);
+
+    if (enabledDimensions.length === 0) {
+      return Response.json(
+        { error: "生成搜索计划前，至少要启用一个维度。" },
+        { status: 400 }
+      );
+    }
+
+    const body = (await request.json().catch(() => ({}))) as GenerateSearchPlanRequest;
+
+    if (run.searchPlan && !body.forceRegenerate) {
+      return Response.json({ run });
+    }
+
+    const items = await generateSearchPlan(
+      buildSearchPlanInput({
+        goal: run.goal,
+        dimensions: run.dimensions
+      })
     );
+    const nextRun = await updateRunAggregate(runId, {
+      status: "search_plan_ready",
+      searchPlan: {
+        status: "draft",
+        items,
+        confirmedAt: null
+      },
+      candidates: [],
+      evidence: []
+    });
+
+    return Response.json({ run: nextRun });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "生成搜索计划失败。";
+
+    return Response.json({ error: message }, { status: 500 });
   }
-
-  const enabledDimensions = run.dimensions.filter((dimension) => dimension.enabled);
-
-  if (enabledDimensions.length === 0) {
-    return Response.json(
-      { error: "生成检索计划前，至少要启用一个维度。" },
-      { status: 400 }
-    );
-  }
-
-  const body = (await request.json().catch(() => ({}))) as GenerateSearchPlanRequest;
-
-  if (run.searchPlan && !body.forceRegenerate) {
-    return Response.json({ run });
-  }
-
-  const items = await generateSearchPlan(
-    buildSearchPlanInput({
-      goal: run.goal,
-      dimensions: run.dimensions
-    })
-  );
-  const nextRun = await updateRunAggregate(runId, {
-    status: "search_plan_ready",
-    searchPlan: {
-      status: "draft",
-      items,
-      confirmedAt: null
-    },
-    candidates: [],
-    evidence: []
-  });
-
-  return Response.json({ run: nextRun });
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
@@ -90,7 +96,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const searchPlan = coerceSearchPlan(body.searchPlan ?? body);
 
     if (!searchPlan) {
-      return Response.json({ error: "检索计划数据无效。" }, { status: 400 });
+      return Response.json({ error: "搜索计划数据无效。" }, { status: 400 });
     }
 
     const nextRun = await updateRunAggregate(runId, {
@@ -106,7 +112,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     return Response.json({ run: nextRun });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "更新检索计划失败。";
+    const message = error instanceof Error ? error.message : "更新搜索计划失败。";
 
     return Response.json({ error: message }, { status: 400 });
   }

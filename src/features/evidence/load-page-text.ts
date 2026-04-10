@@ -37,17 +37,24 @@ export async function loadPageText(url: string) {
     return `Mock content for ${url}. Pricing, docs, security posture, deployment mode, and onboarding details are visible for evidence extraction.`;
   }
 
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "TargetIntelligenceEngine/0.1"
-    }
-  });
-  const rawText = response.ok ? await response.text() : "";
-  const normalized = normalizePageText(rawText);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "TargetIntelligenceEngine/0.1"
+      }
+    });
+    const rawText = response.ok ? await response.text() : "";
+    const normalized = normalizePageText(rawText);
 
-  if (!shouldUseBrowserFallback(normalized)) {
-    return normalized;
+    if (!shouldUseBrowserFallback(normalized)) {
+      return normalized;
+    }
+  } catch {
   }
 
-  return loadWithPlaywright(url);
+  try {
+    return await loadWithPlaywright(url);
+  } catch {
+    return "";
+  }
 }

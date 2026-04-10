@@ -19,6 +19,14 @@ describe("buildInitialDimensions", () => {
     const totalWeight = dimensions.reduce((sum, dimension) => sum + dimension.weight, 0);
 
     expect(totalWeight).toBeCloseTo(1, 3);
+    expect(dimensions.map((dimension) => dimension.name)).toEqual([
+      "成本",
+      "性能",
+      "易用性",
+      "生态",
+      "可靠性",
+      "合规性"
+    ]);
   });
 
   it("raises compliance weight when regulated deployment needs appear", () => {
