@@ -1,12 +1,12 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-current_phase_name: stage goals and gsd handoff
+milestone_name: MVP
+current_phase_name: between milestones
 status: completed
-stopped_at: Phase 6 execution complete
-last_updated: "2026-04-10T02:12:00.000Z"
-last_activity: 2026-04-10 -- Phase 06 execution complete
+stopped_at: Milestone v1.0 archived
+last_updated: "2026-04-10T02:30:00.000Z"
+last_activity: 2026-04-10 -- Milestone v1.0 archived
 progress:
   total_phases: 6
   completed_phases: 6
@@ -22,16 +22,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-10)
 
 **Core value:** Make target decomposition, competitor mapping, and stage planning evidence-first instead of model-opinion-first.  
-**Current focus:** Milestone wrap-up after Phase 06 completion
+**Current focus:** Planning the next milestone
 
 ## Current Position
 
-Phase: 06 (stage-goals-gsd-handoff) - COMPLETED
-Current Phase Name: stage goals and gsd handoff
-Plan: 2/2 complete
-Status: Phase complete
-Last activity: 2026-04-10 -- Phase 06 execution complete
-Last Activity Description: Phase 06 execution complete - stage goals and handoff shipped
+Phase: Between Milestones
+Current Phase Name: between milestones
+Plan: Milestone archived
+Status: Ready for next milestone planning
+Last activity: 2026-04-10 -- Milestone v1.0 archived
+Last Activity Description: v1.0 archived and ready for `/gsd-new-milestone`
 
 Progress: [#####] 100%
 
@@ -89,6 +89,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-10T10:12:00+08:00
-Stopped at: Phase 6 execution complete
-Resume file: .planning/ROADMAP.md
+Last session: 2026-04-10T10:30:00+08:00
+Stopped at: Milestone v1.0 archived
+Resume file: .planning/PROJECT.md
