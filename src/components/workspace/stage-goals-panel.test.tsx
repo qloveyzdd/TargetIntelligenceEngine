@@ -64,8 +64,8 @@ describe("StageGoalsPanel", () => {
       />
     );
 
-    expect(markup).toContain("Preview handoff");
-    expect(markup).toContain("Copy handoff");
+    expect(markup).toContain("预览交接结果");
+    expect(markup).toContain("复制交接结果");
     expect(markup).toContain("Validate the threshold.");
   });
 

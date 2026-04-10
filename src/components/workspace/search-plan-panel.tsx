@@ -15,6 +15,7 @@ function groupItems(items: SearchPlanItem[], mode: SearchPlanItem["mode"]) {
 export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
   const [isPending, startTransition] = useTransition();
   const searchPlan = run.searchPlan;
+  const dimensionNames = new Map(run.dimensions.map((dimension) => [dimension.id, dimension.name]));
 
   function generateSearchPlan(forceRegenerate = false) {
     startTransition(() => {
@@ -75,7 +76,7 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
   ) {
     return (
       <p style={styles.waiting}>
-        SearchPlan stays locked until the dimension draft is saved as `dimensions_ready`.
+        检索计划要等维度草稿保存为 `dimensions_ready` 后才可用。
       </p>
     );
   }
@@ -84,8 +85,7 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
     return (
       <div style={styles.emptyState}>
         <p style={styles.waiting}>
-          Generate the SearchPlan draft after confirming dimensions. This draft explains
-          what the next phase will search and why.
+          维度确认后再生成检索计划草稿。这里展示的是“接下来要搜什么、为什么搜”，不是候选结果本身。
         </p>
         <button
           type="button"
@@ -94,7 +94,7 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
           disabled={isPending}
           data-testid="generate-search-plan"
         >
-          {isPending ? "Generating..." : "Generate search plan"}
+          {isPending ? "生成中..." : "生成检索计划"}
         </button>
       </div>
     );
@@ -107,8 +107,7 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
     <div style={styles.wrapper} data-testid="search-plan-panel">
       <div style={styles.toolbar}>
         <p style={styles.waiting}>
-          Review the draft before Phase 3 starts real candidate recall. This panel is only
-          about the search plan, not the candidate results.
+          在 Phase 3 真正开始召回候选之前，先确认这份草稿。这里关注的是检索计划，不是候选结果。
         </p>
         <div style={styles.actions}>
           <button
@@ -118,7 +117,7 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
             disabled={isPending}
             data-testid="regenerate-search-plan"
           >
-            {isPending ? "Refreshing..." : "Regenerate draft"}
+            {isPending ? "刷新中..." : "重新生成草稿"}
           </button>
           <button
             type="button"
@@ -127,11 +126,7 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
             disabled={isPending || searchPlan.status === "confirmed"}
             data-testid="confirm-search-plan"
           >
-            {searchPlan.status === "confirmed"
-              ? "Search plan confirmed"
-              : isPending
-                ? "Confirming..."
-                : "Confirm search plan"}
+            {searchPlan.status === "confirmed" ? "检索计划已确认" : isPending ? "确认中..." : "确认检索计划"}
           </button>
         </div>
       </div>
@@ -140,7 +135,7 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
         style={styles.group}
         data-testid="search-plan-group-same_goal"
       >
-        <h3 style={styles.groupTitle}>same_goal</h3>
+        <h3 style={styles.groupTitle}>同目标检索</h3>
         <div style={styles.grid}>
           {sameGoalItems.map((item) => (
             <article
@@ -149,10 +144,10 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
               data-testid={`search-plan-item-${item.id}`}
             >
               <strong>{item.query}</strong>
-              <p style={styles.meta}>Expected candidates: {item.expectedCandidateCount}</p>
+              <p style={styles.meta}>预计候选数：{item.expectedCandidateCount}</p>
               <p style={styles.body}>{item.whatToFind}</p>
               <p style={styles.body}>{item.whyThisSearch}</p>
-              <p style={styles.meta}>Sources: {item.sourceHints.join(", ")}</p>
+              <p style={styles.meta}>来源提示：{item.sourceHints.join(", ")}</p>
             </article>
           ))}
         </div>
@@ -162,7 +157,7 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
         style={styles.group}
         data-testid="search-plan-group-dimension_leader"
       >
-        <h3 style={styles.groupTitle}>dimension_leader</h3>
+        <h3 style={styles.groupTitle}>维度冠军检索</h3>
         <div style={styles.grid}>
           {leaderItems.map((item) => (
             <article
@@ -170,11 +165,11 @@ export function SearchPlanPanel({ run, onRunChanged }: SearchPlanPanelProps) {
               style={styles.card}
               data-testid={`search-plan-item-${item.id}`}
             >
-              <strong>{item.dimensionId}</strong>
-              <p style={styles.meta}>Query: {item.query}</p>
+              <strong>{dimensionNames.get(item.dimensionId ?? "") ?? item.dimensionId}</strong>
+              <p style={styles.meta}>检索词：{item.query}</p>
               <p style={styles.body}>{item.whatToFind}</p>
               <p style={styles.body}>{item.whyThisSearch}</p>
-              <p style={styles.meta}>Sources: {item.sourceHints.join(", ")}</p>
+              <p style={styles.meta}>来源提示：{item.sourceHints.join(", ")}</p>
             </article>
           ))}
         </div>

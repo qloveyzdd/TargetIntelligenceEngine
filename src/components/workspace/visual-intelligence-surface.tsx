@@ -20,7 +20,7 @@ const RadarChart = dynamic(
     ssr: false,
     loading: () => (
       <div style={styles.chartFallback} data-testid="radar-chart">
-        Loading radar chart...
+        正在加载雷达图...
       </div>
     )
   }
@@ -32,7 +32,7 @@ const RelationshipGraph = dynamic(
     ssr: false,
     loading: () => (
       <div style={styles.chartFallback} data-testid="relationship-graph">
-        Loading relationship graph...
+        正在加载关系图...
       </div>
     )
   }
@@ -46,7 +46,7 @@ function ExplanationPanel({ explanation }: { explanation: VisualExplanation | nu
   if (!explanation) {
     return (
       <div style={styles.explanationEmpty} data-testid="visual-explanation-panel">
-        Select a chart object to inspect its explanation.
+        请选择图表中的对象查看解释。
       </div>
     );
   }
@@ -54,7 +54,7 @@ function ExplanationPanel({ explanation }: { explanation: VisualExplanation | nu
   return (
     <div style={styles.explanationPanel} data-testid="visual-explanation-panel">
       <div style={styles.explanationHeader}>
-        <p style={styles.sectionEyebrow}>Explanation</p>
+        <p style={styles.sectionEyebrow}>解释</p>
         <h3 style={styles.explanationTitle}>{explanation.title}</h3>
         <p style={styles.explanationSubtitle}>{explanation.subtitle}</p>
         <p style={styles.explanationSummary}>{explanation.summary}</p>
@@ -79,9 +79,9 @@ function ExplanationPanel({ explanation }: { explanation: VisualExplanation | nu
       </div>
 
       <div style={styles.evidenceSection}>
-        <p style={styles.sectionEyebrow}>Evidence</p>
+        <p style={styles.sectionEyebrow}>证据</p>
         {explanation.evidence.length === 0 ? (
-          <p style={styles.explanationSubtitle}>No evidence rows are attached to this target.</p>
+          <p style={styles.explanationSubtitle}>当前对象还没有挂接证据记录。</p>
         ) : (
           <div style={styles.evidenceList}>
             {explanation.evidence.map((record) => (
@@ -92,10 +92,10 @@ function ExplanationPanel({ explanation }: { explanation: VisualExplanation | nu
                 </div>
                 <p style={styles.explanationSubtitle}>{record.excerpt}</p>
                 <p style={styles.explanationSubtitle}>
-                  {record.extractedValue} | confidence {record.confidenceLabel}
+                  {record.extractedValue} | 置信度 {record.confidenceLabel}
                 </p>
                 <a href={record.url} target="_blank" rel="noreferrer" style={styles.link}>
-                  Open source
+                  打开来源
                 </a>
               </article>
             ))}
@@ -165,11 +165,11 @@ export function VisualIntelligenceSurface({
         <section style={styles.card}>
           <div style={styles.sectionHeader}>
             <div>
-              <p style={styles.sectionEyebrow}>Radar</p>
-              <h2 style={styles.sectionTitle}>Radar comparison</h2>
+              <p style={styles.sectionEyebrow}>雷达图</p>
+              <h2 style={styles.sectionTitle}>雷达对比</h2>
             </div>
             <span style={styles.panelMeta}>
-              Goal + {radarModel.selection.selectedCandidateIds.length} candidates
+              目标 + {radarModel.selection.selectedCandidateIds.length} 个候选
             </span>
           </div>
 
@@ -213,10 +213,10 @@ export function VisualIntelligenceSurface({
         <section style={styles.card}>
           <div style={styles.sectionHeader}>
             <div>
-              <p style={styles.sectionEyebrow}>Graph</p>
-              <h2 style={styles.sectionTitle}>Relationship map</h2>
+              <p style={styles.sectionEyebrow}>关系图</p>
+              <h2 style={styles.sectionTitle}>关系图谱</h2>
             </div>
-            <span style={styles.panelMeta}>{graphModel.nodes.length} nodes</span>
+            <span style={styles.panelMeta}>{graphModel.nodes.length} 个节点</span>
           </div>
 
           <RelationshipGraph

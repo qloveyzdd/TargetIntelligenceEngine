@@ -35,12 +35,12 @@ export async function POST(request: Request, context: RouteContext) {
   const run = await getRunById(runId);
 
   if (!run) {
-    return Response.json({ error: "Run not found." }, { status: 404 });
+    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
   }
 
   if (!run.goal || !canGenerateDimensions(run.status)) {
     return Response.json(
-      { error: "A confirmed GoalCard is required before generating dimensions." },
+      { error: "生成维度前，必须先确认 GoalCard。" },
       { status: 400 }
     );
   }
@@ -79,7 +79,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   const run = await getRunById(runId);
 
   if (!run) {
-    return Response.json({ error: "Run not found." }, { status: 404 });
+    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
   }
 
   try {
@@ -87,7 +87,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const dimensions = coerceDimensions(body.dimensions);
 
     if (!dimensions) {
-      return Response.json({ error: "Dimensions payload is invalid." }, { status: 400 });
+      return Response.json({ error: "维度数据无效。" }, { status: 400 });
     }
 
     const nextRun = await updateRunAggregate(runId, {
@@ -100,7 +100,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     return Response.json({ run: nextRun });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to update dimensions.";
+    const message = error instanceof Error ? error.message : "更新维度失败。";
 
     return Response.json({ error: message }, { status: 400 });
   }

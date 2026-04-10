@@ -37,7 +37,7 @@ export function GoalInputForm({
     };
 
     if (!draftResponse.ok || !draftPayload.run) {
-      throw new Error(draftPayload.error ?? "Failed to create a draft run.");
+      throw new Error(draftPayload.error ?? "创建分析运行失败。");
     }
 
     const goalResponse = await fetch("/api/goal-card/generate", {
@@ -57,7 +57,7 @@ export function GoalInputForm({
     };
 
     if (!goalResponse.ok || !goalPayload.goal) {
-      throw new Error(goalPayload.error ?? "Failed to generate the GoalCard.");
+      throw new Error(goalPayload.error ?? "生成 GoalCard 失败。");
     }
 
     const runResponse = await fetch(`/api/runs/${draftPayload.run.id}`, {
@@ -78,7 +78,7 @@ export function GoalInputForm({
     };
 
     if (!runResponse.ok || !runPayload.run) {
-      throw new Error(runPayload.error ?? "Failed to update the run.");
+      throw new Error(runPayload.error ?? "更新分析运行失败。");
     }
 
     onRunChanged(runPayload.run);
@@ -88,7 +88,7 @@ export function GoalInputForm({
     event.preventDefault();
 
     if (!inputText.trim()) {
-      setError("Goal description is required.");
+      setError("请输入目标描述。");
       return;
     }
 
@@ -99,7 +99,7 @@ export function GoalInputForm({
         setError(
           submissionError instanceof Error
             ? submissionError.message
-            : "Failed to generate the GoalCard."
+            : "生成 GoalCard 失败。"
         );
       });
     });
@@ -108,7 +108,7 @@ export function GoalInputForm({
   return (
     <form onSubmit={handleSubmit} style={styles.form} data-testid="goal-input-form">
       <label style={styles.field}>
-        <span style={styles.label}>Goal description</span>
+        <span style={styles.label}>目标描述</span>
         <textarea
           data-testid="goal-input-text"
           name="inputText"
@@ -116,12 +116,12 @@ export function GoalInputForm({
           style={styles.textarea}
           value={inputText}
           onChange={(event) => setInputText(event.target.value)}
-          placeholder="Example: Build an evidence-first target intelligence engine for product planning."
+          placeholder="例如：做一个面向产品规划、以证据为先的目标情报分析工具。"
         />
       </label>
 
       <label style={styles.field}>
-        <span style={styles.label}>Supporting notes</span>
+        <span style={styles.label}>补充说明</span>
         <textarea
           data-testid="goal-input-notes"
           name="inputNotes"
@@ -129,7 +129,7 @@ export function GoalInputForm({
           style={styles.textarea}
           value={inputNotes}
           onChange={(event) => setInputNotes(event.target.value)}
-          placeholder="Add budget, deployment mode, team size, or market constraints."
+          placeholder="补充预算、部署方式、团队规模、行业限制等信息。"
         />
       </label>
 
@@ -140,7 +140,7 @@ export function GoalInputForm({
           disabled={isPending}
           data-testid="generate-goal-card"
         >
-          {isPending ? "Generating..." : "Generate GoalCard"}
+          {isPending ? "生成中..." : "生成 GoalCard"}
         </button>
         {error ? <p style={styles.error}>{error}</p> : null}
       </div>

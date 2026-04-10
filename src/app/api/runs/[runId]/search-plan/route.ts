@@ -32,12 +32,12 @@ export async function POST(request: Request, context: RouteContext) {
   const run = await getRunById(runId);
 
   if (!run) {
-    return Response.json({ error: "Run not found." }, { status: 404 });
+    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
   }
 
   if (!run.goal || !canGenerateSearchPlan(run.status)) {
     return Response.json(
-      { error: "Confirmed dimensions are required before generating a search plan." },
+      { error: "生成检索计划前，必须先确认维度。" },
       { status: 400 }
     );
   }
@@ -46,7 +46,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   if (enabledDimensions.length === 0) {
     return Response.json(
-      { error: "At least one enabled dimension is required before generating a search plan." },
+      { error: "生成检索计划前，至少要启用一个维度。" },
       { status: 400 }
     );
   }
@@ -82,7 +82,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   const run = await getRunById(runId);
 
   if (!run) {
-    return Response.json({ error: "Run not found." }, { status: 404 });
+    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
   }
 
   try {
@@ -90,7 +90,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const searchPlan = coerceSearchPlan(body.searchPlan ?? body);
 
     if (!searchPlan) {
-      return Response.json({ error: "Search plan payload is invalid." }, { status: 400 });
+      return Response.json({ error: "检索计划数据无效。" }, { status: 400 });
     }
 
     const nextRun = await updateRunAggregate(runId, {
@@ -106,7 +106,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     return Response.json({ run: nextRun });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to update the search plan.";
+    const message = error instanceof Error ? error.message : "更新检索计划失败。";
 
     return Response.json({ error: message }, { status: 400 });
   }

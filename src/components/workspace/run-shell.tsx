@@ -23,11 +23,38 @@ type DimensionSummaryProps = {
   dimensions: Dimension[];
 };
 
+function formatDirectionLabel(direction: Dimension["direction"]) {
+  return direction === "higher_better" ? "越高越好" : "越低越好";
+}
+
+function formatRunStatus(status: AnalysisRun["status"]) {
+  switch (status) {
+    case "draft":
+      return "草稿";
+    case "goal_ready":
+      return "GoalCard 待确认";
+    case "goal_confirmed":
+      return "GoalCard 已确认";
+    case "dimensions_ready":
+      return "维度已确认";
+    case "search_plan_ready":
+      return "检索计划草稿";
+    case "search_plan_confirmed":
+      return "检索计划已确认";
+    case "candidates_ready":
+      return "候选已生成";
+    case "evidence_ready":
+      return "证据已生成";
+    default:
+      return status;
+  }
+}
+
 function DimensionSummary({ dimensions }: DimensionSummaryProps) {
   if (dimensions.length === 0) {
     return (
       <div style={styles.dimensionEmpty}>
-        Confirm the GoalCard to inject the initial six core dimensions.
+        确认 GoalCard 后，会自动注入初始 6 个核心维度。
       </div>
     );
   }
@@ -36,10 +63,10 @@ function DimensionSummary({ dimensions }: DimensionSummaryProps) {
     <div style={styles.dimensionBlock} data-testid="dimension-summary">
       <div style={styles.panelHeader}>
         <div>
-          <p style={styles.sectionEyebrow}>Dimensions</p>
-          <h3 style={styles.dimensionTitle}>Current dimensions</h3>
+          <p style={styles.sectionEyebrow}>维度</p>
+          <h3 style={styles.dimensionTitle}>当前维度</h3>
         </div>
-        <span style={styles.panelMeta}>{dimensions.length} items</span>
+        <span style={styles.panelMeta}>{dimensions.length} 项</span>
       </div>
       <div style={styles.dimensionGrid}>
         {dimensions.map((dimension) => (
@@ -50,7 +77,7 @@ function DimensionSummary({ dimensions }: DimensionSummaryProps) {
           >
             <strong>{dimension.name}</strong>
             <p style={styles.dimensionMeta}>
-              Weight: {dimension.weight.toFixed(3)} | Direction: {dimension.direction}
+              权重：{dimension.weight.toFixed(3)} | 方向：{formatDirectionLabel(dimension.direction)}
             </p>
             <p style={styles.dimensionDefinition}>{dimension.definition}</p>
           </article>
@@ -86,7 +113,7 @@ export async function requestRunScoring({
   };
 
   if (!response.ok || !payload.run) {
-    throw new Error(payload.error ?? "Failed to generate scoring.");
+    throw new Error(payload.error ?? "生成评分失败。");
   }
 
   return payload.run;
@@ -115,7 +142,7 @@ export function RunShell({ run = null }: RunShellProps) {
           setCurrentRun(nextRun);
         } catch (error) {
           setScoringError(
-            error instanceof Error ? error.message : "Failed to generate scoring."
+            error instanceof Error ? error.message : "生成评分失败。"
           );
         }
       })();
@@ -126,27 +153,26 @@ export function RunShell({ run = null }: RunShellProps) {
     <div style={styles.page}>
       <section style={styles.hero}>
         <div>
-          <p style={styles.eyebrow}>Analysis Workspace</p>
-          <h1 style={styles.title}>Target Intelligence Engine</h1>
+          <p style={styles.eyebrow}>分析工作台</p>
+          <h1 style={styles.title}>目标情报引擎</h1>
           <p style={styles.subtitle}>
-            Start with a stable analysis container, then add GoalCard, dimensions,
-            candidates, evidence, and stage goals on top of it.
+            先建立稳定的分析容器，再逐步叠加 GoalCard、维度、候选、证据和阶段目标。
           </p>
         </div>
         {currentRun ? (
-          <div style={styles.runChip}>Current run: {currentRun.id}</div>
+          <div style={styles.runChip}>当前运行：{currentRun.id}</div>
         ) : (
-          <div style={styles.runChip}>Ready to create the first analysis run</div>
+          <div style={styles.runChip}>准备创建第一个分析运行</div>
         )}
       </section>
 
       <section style={styles.panel}>
         <div style={styles.panelHeader}>
           <div>
-            <p style={styles.sectionEyebrow}>Goal Input</p>
-            <h2 style={styles.sectionTitle}>Top input area</h2>
+            <p style={styles.sectionEyebrow}>目标输入</p>
+            <h2 style={styles.sectionTitle}>输入区</h2>
           </div>
-          <span style={styles.panelMeta}>GoalInputForm</span>
+          <span style={styles.panelMeta}>目标表单</span>
         </div>
         <GoalInputForm
           initialInputText={currentRun?.inputText ?? ""}
@@ -159,12 +185,12 @@ export function RunShell({ run = null }: RunShellProps) {
         <div style={styles.panelHeader}>
           <div>
             <p style={styles.sectionEyebrow}>GoalCard</p>
-            <h2 style={styles.sectionTitle}>Structured goal area</h2>
+            <h2 style={styles.sectionTitle}>结构化目标区</h2>
           </div>
           {currentRun?.goal ? (
-            <span style={styles.panelMeta}>GoalCard ready</span>
+            <span style={styles.panelMeta}>GoalCard 已生成</span>
           ) : (
-            <span style={styles.panelMeta}>Waiting for GoalCard</span>
+            <span style={styles.panelMeta}>等待生成 GoalCard</span>
           )}
         </div>
         {currentRun?.goal ? (
@@ -175,8 +201,7 @@ export function RunShell({ run = null }: RunShellProps) {
           />
         ) : (
           <p style={styles.paragraph}>
-            The generated GoalCard appears here. After the top form completes, this
-            area switches into an editable form so the user can confirm the result.
+            这里会展示生成后的 GoalCard。顶部表单完成后，这块区域会切换成可编辑表单，方便你确认结果。
           </p>
         )}
       </section>
@@ -185,27 +210,27 @@ export function RunShell({ run = null }: RunShellProps) {
         <section style={styles.panel} data-testid="run-detail-panel">
           <div style={styles.panelHeader}>
             <div>
-              <p style={styles.sectionEyebrow}>Run Detail</p>
-              <h2 style={styles.sectionTitle}>Current run data</h2>
+              <p style={styles.sectionEyebrow}>运行详情</p>
+              <h2 style={styles.sectionTitle}>当前运行数据</h2>
             </div>
             <div style={styles.linkGroup}>
               <Link href="/" style={styles.link}>
-                Back to home
+                返回首页
               </Link>
               <Link
                 href={`/runs/${currentRun.id}`}
                 style={styles.link}
                 data-testid="open-run-detail"
               >
-                Open run detail
+                打开详情页
               </Link>
             </div>
           </div>
           <p style={styles.paragraph}>
-            Current status: <strong>{currentRun.status}</strong>
+            当前状态：<strong>{formatRunStatus(currentRun.status)}</strong>
             {currentRun.inputNotes
-              ? ` | Notes: ${currentRun.inputNotes}`
-              : " | No supporting notes"}
+              ? ` | 补充说明：${currentRun.inputNotes}`
+              : " | 没有补充说明"}
           </p>
           <DimensionSummary dimensions={currentRun.dimensions} />
         </section>
@@ -215,13 +240,11 @@ export function RunShell({ run = null }: RunShellProps) {
         <section style={styles.panel}>
           <div style={styles.panelHeader}>
             <div>
-              <p style={styles.sectionEyebrow}>Dimensions</p>
-              <h2 style={styles.sectionTitle}>Editable dimension draft</h2>
+              <p style={styles.sectionEyebrow}>维度</p>
+              <h2 style={styles.sectionTitle}>可编辑维度草稿</h2>
             </div>
             <span style={styles.panelMeta}>
-              {currentRun.status === "dimensions_ready"
-                ? "dimensions_ready"
-                : "draft editing"}
+              {currentRun.status === "dimensions_ready" ? "维度已确认" : "草稿编辑中"}
             </span>
           </div>
           <DimensionEditor
@@ -237,10 +260,10 @@ export function RunShell({ run = null }: RunShellProps) {
           <div style={styles.panelHeader}>
             <div>
               <p style={styles.sectionEyebrow}>SearchPlan</p>
-              <h2 style={styles.sectionTitle}>Explainable search draft</h2>
+              <h2 style={styles.sectionTitle}>可解释检索计划</h2>
             </div>
             <span style={styles.panelMeta}>
-              {currentRun.searchPlan?.status ?? "not generated"}
+              {currentRun.searchPlan ? (currentRun.searchPlan.status === "confirmed" ? "已确认" : "草稿") : "未生成"}
             </span>
           </div>
           <SearchPlanPanel
@@ -255,11 +278,11 @@ export function RunShell({ run = null }: RunShellProps) {
         <section style={styles.panel}>
           <div style={styles.panelHeader}>
             <div>
-              <p style={styles.sectionEyebrow}>Candidates</p>
-              <h2 style={styles.sectionTitle}>Candidate recall</h2>
+              <p style={styles.sectionEyebrow}>候选</p>
+              <h2 style={styles.sectionTitle}>候选召回</h2>
             </div>
             <span style={styles.panelMeta}>
-              {currentRun.candidates.length > 0 ? `${currentRun.candidates.length} candidates` : "not generated"}
+              {currentRun.candidates.length > 0 ? `${currentRun.candidates.length} 个候选` : "未生成"}
             </span>
           </div>
           <CandidatesPanel
@@ -274,11 +297,11 @@ export function RunShell({ run = null }: RunShellProps) {
         <section style={styles.panel}>
           <div style={styles.panelHeader}>
             <div>
-              <p style={styles.sectionEyebrow}>Evidence</p>
-              <h2 style={styles.sectionTitle}>Evidence intake</h2>
+              <p style={styles.sectionEyebrow}>证据</p>
+              <h2 style={styles.sectionTitle}>证据采集</h2>
             </div>
             <span style={styles.panelMeta}>
-              {currentRun.evidence.length > 0 ? `${currentRun.evidence.length} records` : "not generated"}
+              {currentRun.evidence.length > 0 ? `${currentRun.evidence.length} 条记录` : "未生成"}
             </span>
           </div>
           <EvidencePanel
@@ -293,11 +316,11 @@ export function RunShell({ run = null }: RunShellProps) {
         <section style={styles.panel}>
           <div style={styles.panelHeader}>
             <div>
-              <p style={styles.sectionEyebrow}>Scoring</p>
-              <h2 style={styles.sectionTitle}>Explainable scoring and gaps</h2>
+              <p style={styles.sectionEyebrow}>评分</p>
+              <h2 style={styles.sectionTitle}>可解释评分与差距</h2>
             </div>
             <span style={styles.panelMeta}>
-              {currentRun.scoring ? "scoring ready" : "not generated"}
+              {currentRun.scoring ? "评分已生成" : "未生成"}
             </span>
           </div>
           <ScoringPanel
@@ -313,10 +336,10 @@ export function RunShell({ run = null }: RunShellProps) {
         <section style={styles.panel}>
           <div style={styles.panelHeader}>
             <div>
-              <p style={styles.sectionEyebrow}>Visual Intelligence</p>
-              <h2 style={styles.sectionTitle}>Radar and relationship views</h2>
+              <p style={styles.sectionEyebrow}>可视化</p>
+              <h2 style={styles.sectionTitle}>雷达图与关系图</h2>
             </div>
-            <span style={styles.panelMeta}>visuals ready</span>
+            <span style={styles.panelMeta}>可视化已就绪</span>
           </div>
           <VisualIntelligenceSurface
             key={`${currentRun.id}:${currentRun.updatedAt}:visual-surface`}
@@ -329,11 +352,11 @@ export function RunShell({ run = null }: RunShellProps) {
         <section style={styles.panel}>
           <div style={styles.panelHeader}>
             <div>
-              <p style={styles.sectionEyebrow}>Stage Goals</p>
-              <h2 style={styles.sectionTitle}>Stage goals and handoff</h2>
+              <p style={styles.sectionEyebrow}>阶段目标</p>
+              <h2 style={styles.sectionTitle}>阶段目标与交接输出</h2>
             </div>
             <span style={styles.panelMeta}>
-              {currentRun.stageGoals.length > 0 ? `${currentRun.stageGoals.length} stage goals` : "not generated"}
+              {currentRun.stageGoals.length > 0 ? `${currentRun.stageGoals.length} 个阶段目标` : "未生成"}
             </span>
           </div>
           <StageGoalsPanel
@@ -345,7 +368,7 @@ export function RunShell({ run = null }: RunShellProps) {
       ) : null}
 
       <AnalysisPlaceholders
-        statusLabel={currentRun?.status ?? "draft"}
+        statusLabel={currentRun ? formatRunStatus(currentRun.status) : "草稿"}
         hasScoring={Boolean(currentRun?.scoring)}
       />
     </div>

@@ -37,11 +37,50 @@ type BuildVisualExplanationInput = {
 };
 
 function formatScore(value: number | null) {
-  return value === null ? "Unknown" : value.toFixed(1);
+  return value === null ? "未知" : value.toFixed(1);
 }
 
 function formatCoverage(value: number) {
   return `${Math.round(value * 100)}%`;
+}
+
+function formatStageLabel(value: string | undefined) {
+  switch (value) {
+    case "idea":
+      return "想法";
+    case "validation":
+      return "验证";
+    case "mvp":
+      return "MVP";
+    case "growth":
+      return "增长";
+    default:
+      return value ?? "未知";
+  }
+}
+
+function formatDirectionLabel(value: Dimension["direction"]) {
+  return value === "higher_better" ? "越高越好" : "越低越好";
+}
+
+function formatMatchedModes(values: string[]) {
+  if (values.length === 0) {
+    return "无";
+  }
+
+  return values
+    .map((value) => {
+      if (value === "same_goal") {
+        return "同目标";
+      }
+
+      if (value === "dimension_leader") {
+        return "维度冠军";
+      }
+
+      return value;
+    })
+    .join(", ");
 }
 
 function buildEvidenceRecords(records: Evidence[]) {
@@ -81,31 +120,31 @@ function buildGoalExplanation(run: AnalysisRun): VisualExplanation {
   const enabledDimensions = run.dimensions.filter((dimension) => dimension.enabled);
 
   return {
-    title: run.goal?.name ?? "Current goal",
-    subtitle: "Goal overview",
-    summary: run.goal?.jobToBeDone ?? "Use this surface to compare evidence-backed candidates.",
+    title: run.goal?.name ?? "当前目标",
+    subtitle: "目标概览",
+    summary: run.goal?.jobToBeDone ?? "在这里对比有证据支撑的候选对象。",
     metrics: [
       {
-        label: "Stage",
-        value: run.goal?.currentStage ?? "Unknown"
+        label: "阶段",
+        value: formatStageLabel(run.goal?.currentStage)
       },
       {
-        label: "Enabled dimensions",
+        label: "启用维度",
         value: String(enabledDimensions.length)
       },
       {
-        label: "Scored candidates",
+        label: "已评分候选",
         value: String(run.scoring?.candidateScorecards.length ?? 0)
       }
     ],
     related: [
       {
-        label: "Hard constraints",
-        value: run.goal?.hardConstraints.join(", ") || "none"
+        label: "硬约束",
+        value: run.goal?.hardConstraints.join(", ") || "无"
       },
       {
-        label: "Soft preferences",
-        value: run.goal?.softPreferences.join(", ") || "none"
+        label: "软偏好",
+        value: run.goal?.softPreferences.join(", ") || "无"
       }
     ],
     evidence: []
@@ -130,32 +169,32 @@ function buildCandidateExplanation(
 
   return {
     title: candidate.name,
-    subtitle: "Candidate explanation",
+    subtitle: "候选说明",
     summary:
       scorecard.overallScore === null
-        ? "This candidate has not reached an evidence-backed overall score yet."
-        : `${candidate.name} is visible because scoring already exists for this analysis run.`,
+        ? "这个候选还没有形成有证据支撑的总分。"
+        : `${candidate.name} 当前会显示在这里，是因为这次分析已经生成了评分结果。`,
     metrics: [
       {
-        label: "Overall score",
+        label: "总分",
         value: formatScore(scorecard.overallScore)
       },
       {
-        label: "Coverage",
+        label: "覆盖率",
         value: formatCoverage(scorecard.coverage)
       },
       {
-        label: "Unknown dimensions",
+        label: "未知维度",
         value: String(scorecard.unknownCount)
       }
     ],
     related: [
       {
-        label: "Matched modes",
-        value: candidate.matchedModes.join(", ") || "none"
+        label: "匹配模式",
+        value: formatMatchedModes(candidate.matchedModes)
       },
       {
-        label: "Known dimensions",
+        label: "已知维度",
         value:
           knownDimensions
             .map((item) => {
@@ -163,7 +202,7 @@ function buildCandidateExplanation(
 
               return `${dimension?.name ?? item.dimensionId} ${formatScore(item.score)}`;
             })
-            .join(", ") || "none"
+            .join(", ") || "无"
       }
     ],
     evidence: buildEvidenceRecords(getEvidenceByIds(run, evidenceIds))
@@ -197,30 +236,30 @@ function buildDimensionExplanation(
 
   return {
     title: dimension.name,
-    subtitle: "Dimension explanation",
+    subtitle: "维度说明",
     summary: dimension.definition,
     metrics: [
       {
-        label: "Weight",
+        label: "权重",
         value: dimension.weight.toFixed(3)
       },
       {
-        label: "Direction",
-        value: dimension.direction
+        label: "方向",
+        value: formatDirectionLabel(dimension.direction)
       },
       {
-        label: "Known candidates",
+        label: "已知候选",
         value: String(scoredEntries.length)
       }
     ],
     related: [
       {
-        label: "Benchmark",
-        value: gap?.benchmarkCandidateName ?? "Unknown"
+        label: "基准候选",
+        value: gap?.benchmarkCandidateName ?? "未知"
       },
       {
-        label: "Gap priority",
-        value: gap?.priority === null || gap?.priority === undefined ? "Unknown" : gap.priority.toFixed(1)
+        label: "差距优先级",
+        value: gap?.priority === null || gap?.priority === undefined ? "未知" : gap.priority.toFixed(1)
       }
     ],
     evidence: buildEvidenceRecords(getEvidenceByIds(run, evidenceIds))
@@ -232,31 +271,31 @@ function buildGapExplanation(
   gap: GapPriority
 ): VisualExplanation {
   return {
-    title: `${run.dimensions.find((dimension) => dimension.id === gap.dimensionId)?.name ?? gap.dimensionId} gap`,
-    subtitle: "Gap explanation",
+    title: `${run.dimensions.find((dimension) => dimension.id === gap.dimensionId)?.name ?? gap.dimensionId} 差距`,
+    subtitle: "差距说明",
     summary: gap.summary,
     metrics: [
       {
-        label: "Priority",
+        label: "优先级",
         value: formatScore(gap.priority)
       },
       {
-        label: "Benchmark score",
+        label: "基准分",
         value: formatScore(gap.benchmarkScore)
       },
       {
-        label: "Baseline score",
+        label: "当前分",
         value: formatScore(gap.baselineScore)
       }
     ],
     related: [
       {
-        label: "Benchmark candidate",
-        value: gap.benchmarkCandidateName ?? "Unknown"
+        label: "基准候选",
+        value: gap.benchmarkCandidateName ?? "未知"
       },
       {
-        label: "Matched modes",
-        value: gap.benchmarkMatchedModes.join(", ") || "none"
+        label: "匹配模式",
+        value: formatMatchedModes(gap.benchmarkMatchedModes)
       }
     ],
     evidence: buildEvidenceRecords(getEvidenceByIds(run, gap.benchmarkEvidenceIds))
@@ -275,19 +314,19 @@ function buildEdgeExplanation(
     }
 
     return {
-      title: `${run.goal?.name ?? "Current goal"} -> ${dimension.name}`,
-      subtitle: "Relationship explanation",
-      summary: `${dimension.name} stays active because it is part of the current goal definition.`,
+      title: `${run.goal?.name ?? "当前目标"} -> ${dimension.name}`,
+      subtitle: "关系说明",
+      summary: `${dimension.name} 保持启用，是因为它属于当前目标定义的一部分。`,
       metrics: [
         {
-          label: "Weight",
+          label: "权重",
           value: dimension.weight.toFixed(3)
         }
       ],
       related: [
         {
-          label: "Direction",
-          value: dimension.direction
+          label: "方向",
+          value: formatDirectionLabel(dimension.direction)
         }
       ],
       evidence: []
@@ -307,22 +346,22 @@ function buildEdgeExplanation(
 
     return {
       title: `${dimension.name} -> ${run.candidates.find((item) => item.id === target.candidateId)?.name ?? target.candidateId}`,
-      subtitle: "Relationship explanation",
+      subtitle: "关系说明",
       summary: scorecard.summary,
       metrics: [
         {
-          label: "Dimension score",
+          label: "维度得分",
           value: formatScore(scorecard.score)
         },
         {
-          label: "Coverage",
+          label: "覆盖率",
           value: formatCoverage(scorecard.coverage)
         }
       ],
       related: [
         {
-          label: "Evidence IDs",
-          value: scorecard.evidenceIds.join(", ") || "none"
+          label: "证据 ID",
+          value: scorecard.evidenceIds.join(", ") || "无"
         }
       ],
       evidence: buildEvidenceRecords(getEvidenceByIds(run, scorecard.evidenceIds))

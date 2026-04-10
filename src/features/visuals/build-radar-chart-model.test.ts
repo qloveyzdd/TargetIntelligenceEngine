@@ -331,7 +331,7 @@ describe("buildRadarChartModel", () => {
     expect(ecosystem?.status).toBe("unknown");
     expect(ecosystem?.value).toBeNull();
     expect(ecosystem?.evidenceIds).toEqual(["e-8"]);
-    expect(ecosystem?.summary).toContain("No evidence-backed ecosystem score");
+    expect(ecosystem?.summary).toBe("No evidence-backed ecosystem score.");
   });
 
   it("builds from persisted scoring, dimensions, and candidates without requiring evidence", () => {

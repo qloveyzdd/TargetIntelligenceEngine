@@ -19,6 +19,23 @@ function hasDynamicDimensions(dimensions: Dimension[]) {
   return dimensions.some((dimension) => dimension.layer !== "core");
 }
 
+function formatLayerLabel(layer: Dimension["layer"]) {
+  switch (layer) {
+    case "core":
+      return "通用层";
+    case "domain":
+      return "领域层";
+    case "project":
+      return "项目层";
+    default:
+      return layer;
+  }
+}
+
+function formatDirectionLabel(direction: Dimension["direction"]) {
+  return direction === "higher_better" ? "越高越好" : "越低越好";
+}
+
 export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
   const [draft, setDraft] = useState(run.dimensions);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +73,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
           };
 
           if (!response.ok || !payload.run) {
-            setError(payload.error ?? "Failed to generate the dimension draft.");
+            setError(payload.error ?? "生成维度草稿失败。");
             return;
           }
 
@@ -66,7 +83,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
           setError(
             generationError instanceof Error
               ? generationError.message
-              : "Failed to generate the dimension draft."
+              : "生成维度草稿失败。"
           );
         }
       })();
@@ -94,14 +111,14 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
           };
 
           if (!response.ok || !payload.run) {
-            setError(payload.error ?? "Failed to save dimensions.");
+            setError(payload.error ?? "保存维度失败。");
             return;
           }
 
           setDraft(payload.run.dimensions);
           onRunChanged(payload.run);
         } catch (saveError) {
-          setError(saveError instanceof Error ? saveError.message : "Failed to save dimensions.");
+          setError(saveError instanceof Error ? saveError.message : "保存维度失败。");
         }
       })();
     });
@@ -115,8 +132,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
     return (
       <div style={styles.emptyState} data-testid="dimension-editor-empty">
         <p style={styles.emptyText}>
-          The run already has the six core dimensions from Phase 1. Generate the editable
-          dimension draft to add domain and project layers.
+          当前运行已经有 Phase 1 注入的 6 个核心维度。生成可编辑维度草稿后，才会补上领域层和项目层。
         </p>
         <button
           type="button"
@@ -125,7 +141,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
           disabled={isPending}
           data-testid="generate-dimension-draft"
         >
-          {isPending ? "Generating..." : "Generate dimension draft"}
+          {isPending ? "生成中..." : "生成维度草稿"}
         </button>
         {error ? <p style={styles.error}>{error}</p> : null}
       </div>
@@ -136,8 +152,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
     <div style={styles.wrapper} data-testid="dimension-editor">
       <div style={styles.toolbar}>
         <p style={styles.helper}>
-          Edit `weight`, `direction`, `definition`, `evidenceNeeded`, and `enabled` before
-          confirming the dimension set.
+          确认前可调整 `weight`、`direction`、`definition`、`evidenceNeeded` 和 `enabled`。
         </p>
         <div style={styles.actions}>
           <button
@@ -147,7 +162,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
             disabled={isPending}
             data-testid="regenerate-dimension-draft"
           >
-            {isPending ? "Refreshing..." : "Regenerate draft"}
+            {isPending ? "刷新中..." : "重新生成草稿"}
           </button>
           <button
             type="button"
@@ -156,7 +171,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
             disabled={isPending}
             data-testid="save-dimensions"
           >
-            {isPending ? "Saving..." : "Save dimensions"}
+            {isPending ? "保存中..." : "保存维度"}
           </button>
         </div>
       </div>
@@ -172,7 +187,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
               <div>
                 <strong>{dimension.name}</strong>
                 <p style={styles.meta}>
-                  Layer: {dimension.layer} | Direction: {dimension.direction}
+                  层级：{formatLayerLabel(dimension.layer)} | 方向：{formatDirectionLabel(dimension.direction)}
                 </p>
               </div>
               <label style={styles.toggle}>
@@ -187,12 +202,12 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
                   }
                   data-testid={`dimension-enabled-${dimension.id}`}
                 />
-                enabled
+                启用
               </label>
             </div>
 
             <label style={styles.field}>
-              <span style={styles.label}>Weight</span>
+              <span style={styles.label}>权重</span>
               <input
                 type="number"
                 step="0.01"
@@ -210,7 +225,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
             </label>
 
             <label style={styles.field}>
-              <span style={styles.label}>Direction</span>
+              <span style={styles.label}>方向</span>
               <select
                 value={dimension.direction}
                 onChange={(event) =>
@@ -222,13 +237,13 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
                 style={styles.input}
                 data-testid={`dimension-direction-${dimension.id}`}
               >
-                <option value="higher_better">higher_better</option>
-                <option value="lower_better">lower_better</option>
+                <option value="higher_better">越高越好</option>
+                <option value="lower_better">越低越好</option>
               </select>
             </label>
 
             <label style={styles.field}>
-              <span style={styles.label}>Definition</span>
+              <span style={styles.label}>定义</span>
               <textarea
                 rows={3}
                 value={dimension.definition}
@@ -244,7 +259,7 @@ export function DimensionEditor({ run, onRunChanged }: DimensionEditorProps) {
             </label>
 
             <label style={styles.field}>
-              <span style={styles.label}>Evidence needed</span>
+              <span style={styles.label}>所需证据</span>
               <textarea
                 rows={3}
                 value={dimension.evidenceNeeded.join("\n")}

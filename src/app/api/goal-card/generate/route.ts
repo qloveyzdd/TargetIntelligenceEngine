@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
     return Response.json({ goal });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to generate the GoalCard.";
+    const message = error instanceof Error ? error.message : "生成 GoalCard 失败。";
 
     return Response.json({ error: message }, { status: 400 });
   }

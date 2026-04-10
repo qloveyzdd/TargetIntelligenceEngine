@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Target Intelligence Engine",
-  description: "Evidence-first goal workspace for structured planning."
+  title: "目标情报引擎",
+  description: "以证据为先的目标分析工作台。"
 };
 
 export default function RootLayout({

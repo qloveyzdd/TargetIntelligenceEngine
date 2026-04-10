@@ -41,7 +41,7 @@ export async function requestRunStageGoals({
   };
 
   if (!response.ok || !payload.run) {
-    throw new Error(payload.error ?? "Failed to generate stage goals.");
+    throw new Error(payload.error ?? "生成阶段目标失败。");
   }
 
   return payload.run;
@@ -60,7 +60,7 @@ export async function requestStageGoalHandoff({
   };
 
   if (!response.ok || !payload.handoff) {
-    throw new Error(payload.error ?? "Failed to load handoff.");
+    throw new Error(payload.error ?? "加载交接结果失败。");
   }
 
   return payload.handoff;
@@ -76,17 +76,25 @@ async function copyToClipboard(value: string) {
 }
 
 function formatStageLabel(value: string) {
-  if (value === "mvp") {
-    return "MVP";
+  if (value === "validation") {
+    return "验证阶段";
   }
 
-  return value.charAt(0).toUpperCase() + value.slice(1);
+  if (value === "mvp") {
+    return "MVP 阶段";
+  }
+
+  if (value === "differentiation") {
+    return "差异化阶段";
+  }
+
+  return value;
 }
 
 export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [handoffError, setHandoffError] = useState<string | null>(null);
-  const [copyMessage, setCopyMessage] = useState("Ready to copy handoff.");
+  const [copyMessage, setCopyMessage] = useState("可以复制交接结果。");
   const [handoff, setHandoff] = useState<StageGoalHandoff | null>(null);
   const [isGeneratingPending, startGenerateTransition] = useTransition();
   const [isHandoffPending, startHandoffTransition] = useTransition();
@@ -107,7 +115,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
           setError(
             generationError instanceof Error
               ? generationError.message
-              : "Failed to generate stage goals."
+              : "生成阶段目标失败。"
           );
         }
       })();
@@ -127,7 +135,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
           setHandoff(nextHandoff);
         } catch (previewError) {
           setHandoffError(
-            previewError instanceof Error ? previewError.message : "Failed to load handoff."
+            previewError instanceof Error ? previewError.message : "加载交接结果失败。"
           );
         }
       })();
@@ -136,7 +144,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
 
   function handleCopyHandoff() {
     setHandoffError(null);
-    setCopyMessage("Copying handoff...");
+    setCopyMessage("复制中...");
 
     startHandoffTransition(() => {
       void (async () => {
@@ -151,10 +159,10 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
           setHandoff(nextHandoff);
 
           const copied = await copyToClipboard(handoffText);
-          setCopyMessage(copied ? "Handoff copied." : "Clipboard unavailable. Preview stays below.");
+          setCopyMessage(copied ? "已复制交接结果。" : "当前环境不支持剪贴板，请直接查看下方预览。");
         } catch (copyError) {
           setHandoffError(
-            copyError instanceof Error ? copyError.message : "Failed to copy handoff."
+            copyError instanceof Error ? copyError.message : "复制交接结果失败。"
           );
         }
       })();
@@ -164,7 +172,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
   if (!run.scoring) {
     return (
       <p style={styles.waiting}>
-        Stage goals stay locked until scoring and gap priorities have been generated.
+        只有先生成评分和差距优先级，阶段目标面板才会解锁。
       </p>
     );
   }
@@ -173,8 +181,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
     return (
       <div style={styles.emptyState} data-testid="stage-goals-empty-state">
         <p style={styles.waiting}>
-          Generate stage goals to turn persisted gaps into three evidence-backed phases:
-          validation, MVP, and differentiation.
+          生成阶段目标后，持久化差距会被整理成 3 个有证据支撑的阶段：验证、MVP 和差异化。
         </p>
         <button
           type="button"
@@ -183,7 +190,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
           disabled={isGeneratingPending}
           data-testid="generate-stage-goals"
         >
-          {isGeneratingPending ? "Generating..." : "Generate stage goals"}
+          {isGeneratingPending ? "生成中..." : "生成阶段目标"}
         </button>
         {error ? <p style={styles.error}>{error}</p> : null}
       </div>
@@ -194,8 +201,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
     <div style={styles.wrapper} data-testid="stage-goals-panel">
       <div style={styles.toolbar}>
         <p style={styles.waiting}>
-          Stage goals are persisted on the run and can be exported as structured handoff for
-          the next planning step.
+          阶段目标会持久化在当前运行上，并可导出成结构化交接结果，供后续规划继续使用。
         </p>
         <div style={styles.buttonGroup}>
           <button
@@ -205,7 +211,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
             disabled={isGeneratingPending}
             data-testid="regenerate-stage-goals"
           >
-            {isGeneratingPending ? "Refreshing..." : "Regenerate stage goals"}
+            {isGeneratingPending ? "刷新中..." : "重新生成阶段目标"}
           </button>
           <button
             type="button"
@@ -214,7 +220,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
             disabled={isHandoffPending}
             data-testid="preview-stage-goal-handoff"
           >
-            {isHandoffPending ? "Loading..." : "Preview handoff"}
+            {isHandoffPending ? "加载中..." : "预览交接结果"}
           </button>
           <button
             type="button"
@@ -223,7 +229,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
             disabled={isHandoffPending}
             data-testid="copy-stage-goal-handoff"
           >
-            {isHandoffPending ? "Copying..." : "Copy handoff"}
+            {isHandoffPending ? "复制中..." : "复制交接结果"}
           </button>
         </div>
       </div>
@@ -238,23 +244,24 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
             <div style={styles.cardHeader}>
               <strong>{formatStageLabel(stageGoal.stage)}</strong>
               <span style={styles.badge}>
-                {stageGoal.relatedDimensions.length} dimension
-                {stageGoal.relatedDimensions.length === 1 ? "" : "s"}
+                {stageGoal.relatedDimensions.length} 个维度
               </span>
             </div>
             <p style={styles.body}>{stageGoal.objective}</p>
             <p style={styles.meta}>
-              Based on gaps:{" "}
-              {stageGoal.basedOnGaps.length > 0 ? stageGoal.basedOnGaps.join(", ") : "none"}
+              基于差距：
+              {" "}
+              {stageGoal.basedOnGaps.length > 0 ? stageGoal.basedOnGaps.join(", ") : "无"}
             </p>
             <p style={styles.meta}>
-              Reference products:{" "}
+              参考产品：
+              {" "}
               {stageGoal.referenceProducts.length > 0
                 ? stageGoal.referenceProducts.join(", ")
-                : "none"}
+                : "无"}
             </p>
             <p style={styles.meta}>
-              Success metrics: {stageGoal.successMetrics.join(" | ")}
+              成功指标：{stageGoal.successMetrics.join(" | ")}
             </p>
           </article>
         ))}
@@ -263,7 +270,7 @@ export function StageGoalsPanel({ run, onRunChanged }: StageGoalsPanelProps) {
       {handoff ? (
         <div style={styles.preview} data-testid="stage-goal-handoff-preview">
           <div style={styles.cardHeader}>
-            <strong>Structured handoff preview</strong>
+            <strong>结构化交接预览</strong>
             <span style={styles.badge}>{handoff.generatedAt}</span>
           </div>
           <pre style={styles.pre}>{JSON.stringify(handoff, null, 2)}</pre>

@@ -26,7 +26,7 @@ export async function POST(request: Request, context: RouteContext) {
   const run = await getRunById(runId);
 
   if (!run) {
-    return Response.json({ error: "Run not found." }, { status: 404 });
+    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
   }
 
   if (
@@ -36,7 +36,7 @@ export async function POST(request: Request, context: RouteContext) {
     !canGenerateCandidates(run.status)
   ) {
     return Response.json(
-      { error: "A confirmed SearchPlan is required before generating candidates." },
+      { error: "生成候选前，必须先确认检索计划。" },
       { status: 400 }
     );
   }

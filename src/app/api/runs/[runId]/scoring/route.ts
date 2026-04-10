@@ -21,12 +21,12 @@ export async function POST(request: Request, context: RouteContext) {
   const run = await getRunById(runId);
 
   if (!run) {
-    return Response.json({ error: "Run not found." }, { status: 404 });
+    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
   }
 
   if (!canGenerateScoring(run.status) || run.candidates.length === 0 || run.evidence.length === 0) {
     return Response.json(
-      { error: "Persisted evidence is required before generating scoring." },
+      { error: "生成评分前，必须先有已保存的证据。" },
       { status: 400 }
     );
   }

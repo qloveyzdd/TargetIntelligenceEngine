@@ -50,7 +50,7 @@ describe("requestRunScoring", () => {
     const fetchImpl = vi.fn(async () => ({
       ok: false,
       json: async () => ({
-        error: "Persisted evidence is required before generating scoring."
+        error: "生成评分前，必须先有已保存的证据。"
       })
     })) as unknown as typeof fetch;
 
@@ -59,7 +59,7 @@ describe("requestRunScoring", () => {
         runId: "run-1",
         fetchImpl
       })
-    ).rejects.toThrow("Persisted evidence is required before generating scoring.");
+    ).rejects.toThrow("生成评分前，必须先有已保存的证据。");
   });
 
   it("mounts the stage goals section once scoring exists", () => {
@@ -87,7 +87,7 @@ describe("requestRunScoring", () => {
       />
     );
 
-    expect(markup).toContain("Stage goals and handoff");
-    expect(markup).toContain("Generate stage goals");
+    expect(markup).toContain("阶段目标与交接输出");
+    expect(markup).toContain("生成阶段目标");
   });
 });

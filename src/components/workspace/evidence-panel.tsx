@@ -55,7 +55,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
           };
 
           if (!response.ok || !payload.run) {
-            setError(payload.error ?? "Failed to generate evidence.");
+            setError(payload.error ?? "生成证据失败。");
             return;
           }
 
@@ -64,7 +64,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
           setError(
             generationError instanceof Error
               ? generationError.message
-              : "Failed to generate evidence."
+              : "生成证据失败。"
           );
         }
       })();
@@ -74,7 +74,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
   if (run.candidates.length === 0) {
     return (
       <p style={styles.waiting}>
-        Evidence stays locked until candidates exist and the run reaches `candidates_ready`.
+        证据面板要等候选存在且运行状态进入 `candidates_ready` 后才可用。
       </p>
     );
   }
@@ -82,8 +82,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
   if (!canShowEvidencePanel(run.status)) {
     return (
       <p style={styles.waiting}>
-        Confirm candidate recall first. Evidence only starts after the run becomes
-        `candidates_ready`.
+        请先完成候选召回。只有运行状态变成 `candidates_ready` 后，才会开始采集证据。
       </p>
     );
   }
@@ -92,8 +91,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
     return (
       <div style={styles.emptyState}>
         <p style={styles.waiting}>
-          Generate evidence to capture source-backed excerpts for the top-5 deep-dive
-          candidates.
+          生成证据后，会为前 5 个深挖候选提取带来源的证据片段。
         </p>
         <button
           type="button"
@@ -102,7 +100,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
           disabled={isPending}
           data-testid="generate-evidence"
         >
-          {isPending ? "Generating..." : "Generate evidence"}
+          {isPending ? "生成中..." : "生成证据"}
         </button>
         {error ? <p style={styles.error}>{error}</p> : null}
       </div>
@@ -113,8 +111,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
     <div style={styles.wrapper} data-testid="evidence-panel">
       <div style={styles.toolbar}>
         <p style={styles.waiting}>
-          Evidence is grouped by candidate and dimension, and every record keeps its source
-          URL and extracted value.
+          证据会按候选和维度分组，每条记录都会保留来源链接和提取值。
         </p>
         <button
           type="button"
@@ -123,7 +120,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
           disabled={isPending}
           data-testid="regenerate-evidence"
         >
-          {isPending ? "Refreshing..." : "Regenerate evidence"}
+          {isPending ? "刷新中..." : "重新生成证据"}
         </button>
       </div>
 
@@ -153,7 +150,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
                         data-testid="evidence-record"
                       >
                         <p style={styles.meta}>
-                          {record.sourceType} | confidence {record.confidence.toFixed(2)}
+                          {record.sourceType} | 置信度 {record.confidence.toFixed(2)}
                         </p>
                         <a
                           href={record.url}
@@ -165,7 +162,7 @@ export function EvidencePanel({ run, onRunChanged }: EvidencePanelProps) {
                         </a>
                         <p style={styles.body}>{record.excerpt}</p>
                         <p style={styles.meta}>
-                          Extracted value: {record.extractedValue}
+                          提取值：{record.extractedValue}
                         </p>
                       </div>
                     ))}

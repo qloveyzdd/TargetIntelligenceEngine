@@ -9,11 +9,15 @@ type ScoringPanelProps = {
 };
 
 function formatScore(value: number | null) {
-  return value === null ? "Unknown" : value.toFixed(1);
+  return value === null ? "未知" : value.toFixed(1);
 }
 
 function formatCoverage(value: number) {
   return `${Math.round(value * 100)}%`;
+}
+
+function formatScoreStatus(value: string) {
+  return value === "known" ? "已知" : value === "unknown" ? "未知" : value;
 }
 
 export function ScoringPanel({
@@ -29,7 +33,7 @@ export function ScoringPanel({
   if (run.evidence.length === 0) {
     return (
       <p style={styles.waiting}>
-        Scoring stays locked until evidence exists for the current analysis run.
+        当前运行必须先有证据，才能开始评分。
       </p>
     );
   }
@@ -38,8 +42,7 @@ export function ScoringPanel({
     return (
       <div style={styles.emptyState} data-testid="scoring-empty-state">
         <p style={styles.waiting}>
-          Generate scoring to turn evidence into dimension scorecards, overall coverage, and
-          gap priorities.
+          生成评分后，证据会被转成维度评分卡、整体覆盖率和差距优先级。
         </p>
         <button
           type="button"
@@ -48,7 +51,7 @@ export function ScoringPanel({
           disabled={isPending}
           data-testid="generate-scoring"
         >
-          {isPending ? "Generating..." : "Generate scoring"}
+          {isPending ? "生成中..." : "生成评分"}
         </button>
         {error ? <p style={styles.error}>{error}</p> : null}
       </div>
@@ -59,8 +62,7 @@ export function ScoringPanel({
     <div style={styles.wrapper} data-testid="scoring-panel">
       <div style={styles.toolbar}>
         <p style={styles.waiting}>
-          Scores stay evidence-first: every scorecard and gap row keeps the evidence IDs that
-          explain it.
+          评分坚持 evidence-first：每张评分卡和每条差距记录都会保留对应的证据 ID。
         </p>
         <button
           type="button"
@@ -69,7 +71,7 @@ export function ScoringPanel({
           disabled={isPending}
           data-testid="regenerate-scoring"
         >
-          {isPending ? "Refreshing..." : "Regenerate scoring"}
+          {isPending ? "刷新中..." : "重新生成评分"}
         </button>
       </div>
 
@@ -87,7 +89,8 @@ export function ScoringPanel({
                     candidateScorecard.candidateId}
                 </h3>
                 <p style={styles.meta}>
-                  Overall score:{" "}
+                  总分：
+                  {" "}
                   <strong data-testid="overall-score">
                     {formatScore(candidateScorecard.overallScore)}
                   </strong>
@@ -95,10 +98,10 @@ export function ScoringPanel({
               </div>
               <div style={styles.badgeRow}>
                 <span style={styles.badge} data-testid="coverage-value">
-                  Coverage {formatCoverage(candidateScorecard.coverage)}
+                  覆盖率 {formatCoverage(candidateScorecard.coverage)}
                 </span>
                 <span style={styles.badge} data-testid="unknown-count-value">
-                  Unknown {candidateScorecard.unknownCount}
+                  未知维度 {candidateScorecard.unknownCount}
                 </span>
               </div>
             </div>
@@ -116,16 +119,17 @@ export function ScoringPanel({
                         dimensionScorecard.dimensionId}
                     </span>
                     <span>
-                      {formatScore(dimensionScorecard.score)} | {dimensionScorecard.status}
+                      {formatScore(dimensionScorecard.score)} | {formatScoreStatus(dimensionScorecard.status)}
                     </span>
                   </summary>
                   <div style={styles.detailsBody}>
                     <p style={styles.meta}>{dimensionScorecard.summary}</p>
                     <p style={styles.meta}>
-                      Evidence IDs:{" "}
+                      证据 ID：
+                      {" "}
                       {dimensionScorecard.evidenceIds.length > 0
                         ? dimensionScorecard.evidenceIds.join(", ")
-                        : "none"}
+                        : "无"}
                     </p>
                     <ul style={styles.contributionList}>
                       {dimensionScorecard.contributions.map((contribution) => {
@@ -138,7 +142,7 @@ export function ScoringPanel({
                             data-testid="score-contribution"
                           >
                             <p style={styles.meta}>
-                              {contribution.evidenceId} | {contribution.status} | weight{" "}
+                              {contribution.evidenceId} | {formatScoreStatus(contribution.status)} | 权重{" "}
                               {contribution.contributionWeight.toFixed(3)}
                             </p>
                             <p style={styles.body}>{contribution.summary}</p>
@@ -162,13 +166,13 @@ export function ScoringPanel({
       <section style={styles.gapCard}>
         <div style={styles.summaryRow}>
           <div>
-            <h3 style={styles.cardTitle}>Gap priorities</h3>
+            <h3 style={styles.cardTitle}>差距优先级</h3>
             <p style={styles.meta}>
-              Benchmark-backed dimensions ranked by weighted gap size.
+              按加权差距大小排序的基准维度。
             </p>
           </div>
           <span style={styles.badge} data-testid="gap-count">
-            {run.scoring.gaps.length} gaps
+            {run.scoring.gaps.length} 条差距
           </span>
         </div>
         <div style={styles.detailsList}>
@@ -181,26 +185,29 @@ export function ScoringPanel({
               <summary style={styles.summary} data-testid="gap-toggle">
                 <span>{dimensionNames.get(gap.dimensionId) ?? gap.dimensionId}</span>
                 <span>
-                  {gap.status === "unknown"
-                    ? "Unknown"
-                    : `${gap.priority?.toFixed(1) ?? "0.0"} priority`}
+                  {gap.status === "unknown" ? "未知" : `${gap.priority?.toFixed(1) ?? "0.0"} 优先级`}
                 </span>
               </summary>
               <div style={styles.detailsBody}>
                 <p style={styles.meta}>{gap.summary}</p>
                 <p style={styles.meta}>
-                  Benchmark: {gap.benchmarkCandidateName ?? "Unknown"} | matched modes:{" "}
-                  {gap.benchmarkMatchedModes.join(", ") || "none"}
+                  基准候选：{gap.benchmarkCandidateName ?? "未知"} | 匹配模式：
+                  {" "}
+                  {gap.benchmarkMatchedModes.join(", ") || "无"}
                 </p>
                 <p style={styles.meta}>
-                  Benchmark evidence IDs:{" "}
+                  基准证据 ID：
+                  {" "}
                   {gap.benchmarkEvidenceIds.length > 0
                     ? gap.benchmarkEvidenceIds.join(", ")
-                    : "none"}
+                    : "无"}
                 </p>
                 <p style={styles.meta}>
-                  Benchmark score: {formatScore(gap.benchmarkScore)} | Baseline:{" "}
-                  {formatScore(gap.baselineScore)} | Gap size: {formatScore(gap.gapSize)}
+                  基准分：{formatScore(gap.benchmarkScore)} | 当前分：
+                  {" "}
+                  {formatScore(gap.baselineScore)} | 差距：
+                  {" "}
+                  {formatScore(gap.gapSize)}
                 </p>
               </div>
             </details>

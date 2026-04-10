@@ -35,7 +35,7 @@ export async function GET(_request: Request, context: RouteContext) {
   const run = await getRunById(runId);
 
   if (!run) {
-    return Response.json({ error: "Run not found." }, { status: 404 });
+    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
   }
 
   return Response.json({ run });
@@ -46,7 +46,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   const currentRun = await getRunById(runId);
 
   if (!currentRun) {
-    return Response.json({ error: "Run not found." }, { status: 404 });
+    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
   }
 
   try {
@@ -55,12 +55,12 @@ export async function PATCH(request: Request, context: RouteContext) {
     const nextGoal = body.goal === undefined ? currentRun.goal : coerceGoalCard(body.goal);
 
     if (body.goal !== undefined && !nextGoal) {
-      return Response.json({ error: "GoalCard payload is invalid." }, { status: 400 });
+      return Response.json({ error: "GoalCard 数据无效。" }, { status: 400 });
     }
 
     if (nextStatus === "goal_confirmed" && !nextGoal) {
       return Response.json(
-        { error: "A valid GoalCard is required before confirmation." },
+        { error: "确认前必须提供有效的 GoalCard。" },
         { status: 400 }
       );
     }
@@ -84,7 +84,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     return Response.json({ run });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to update the run.";
+    const message = error instanceof Error ? error.message : "更新分析运行失败。";
 
     return Response.json({ error: message }, { status: 400 });
   }

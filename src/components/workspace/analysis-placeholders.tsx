@@ -4,7 +4,7 @@ type AnalysisPlaceholdersProps = {
 };
 
 export function AnalysisPlaceholders({
-  statusLabel = "draft",
+  statusLabel = "草稿",
   hasScoring = false
 }: AnalysisPlaceholdersProps) {
   if (hasScoring) {
@@ -14,13 +14,12 @@ export function AnalysisPlaceholders({
   return (
     <section style={styles.grid}>
       <article style={styles.card}>
-        <div style={styles.badge}>Workspace status</div>
-        <h3 style={styles.cardTitle}>Next layer unlocks after scoring</h3>
+        <div style={styles.badge}>工作台状态</div>
+        <h3 style={styles.cardTitle}>评分完成后才会解锁下一层</h3>
         <p style={styles.cardDescription}>
-          Once scoring exists, the workspace will replace this status card with the real
-          stage-goals and handoff surface.
+          一旦评分生成完成，这张状态卡就会被真正的阶段目标和交接面板替换掉。
         </p>
-        <p style={styles.cardMeta}>Current run status: {statusLabel}</p>
+        <p style={styles.cardMeta}>当前运行状态：{statusLabel}</p>
       </article>
     </section>
   );

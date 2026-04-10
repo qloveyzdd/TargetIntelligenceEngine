@@ -12,7 +12,7 @@ function buildGoalSeries(run: AnalysisRun): RadarSeries {
 
   return {
     id: "goal",
-    label: run.goal?.name ?? "Current goal",
+    label: run.goal?.name ?? "当前目标",
     kind: "goal",
     candidateId: null,
     overallScore: 100,
@@ -27,7 +27,7 @@ function buildGoalSeries(run: AnalysisRun): RadarSeries {
       value: 100,
       coverage: 1,
       evidenceIds: [],
-      summary: `Target profile keeps ${dimension.name} at the desired ceiling.`
+      summary: `目标画像会将 ${dimension.name} 维持在理想上限。`
     }))
   };
 }
@@ -67,7 +67,7 @@ function buildCandidateSeries(
           evidenceIds: dimensionScorecard?.evidenceIds ?? [],
           summary:
             dimensionScorecard?.summary ??
-            `No evidence-backed score for ${dimension.name} yet.`
+            `当前还没有 ${dimension.name} 的证据支撑分数。`
         };
       })
   };

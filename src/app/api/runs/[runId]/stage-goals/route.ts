@@ -16,12 +16,12 @@ export async function POST(request: Request, context: RouteContext) {
   const run = await getRunById(runId);
 
   if (!run) {
-    return Response.json({ error: "Run not found." }, { status: 404 });
+    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
   }
 
   if (!run.scoring) {
     return Response.json(
-      { error: "Persisted scoring is required before generating stage goals." },
+      { error: "生成阶段目标前，必须先有已保存的评分结果。" },
       { status: 400 }
     );
   }

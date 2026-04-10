@@ -107,11 +107,11 @@ describe("ScoringPanel", () => {
       />
     );
 
-    expect(markup).toContain("Overall score:");
-    expect(markup).toContain("Coverage 100%");
+    expect(markup).toContain("总分：");
+    expect(markup).toContain("覆盖率 100%");
     expect(markup).toContain("evi-cost-1");
-    expect(markup).toContain("Gap priorities");
-    expect(markup).toContain("matched modes:");
+    expect(markup).toContain("差距优先级");
+    expect(markup).toContain("匹配模式：");
   });
 
   it("renders the generate action when scoring is not ready yet", () => {
@@ -148,6 +148,6 @@ describe("ScoringPanel", () => {
       />
     );
 
-    expect(markup).toContain("Generate scoring");
+    expect(markup).toContain("生成评分");
   });
 });

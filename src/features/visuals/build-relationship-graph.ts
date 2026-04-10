@@ -68,8 +68,8 @@ function createGoalNode(run: AnalysisRun): RelationshipGraphNode {
   return {
     id: GOAL_NODE_ID,
     kind: "goal",
-    label: run.goal?.name ?? "Current goal",
-    summary: run.goal?.jobToBeDone ?? "Goal overview for the current analysis run.",
+    label: run.goal?.name ?? "当前目标",
+    summary: run.goal?.jobToBeDone ?? "当前分析运行的目标概览。",
     position: { x: 0, y: 0 },
     width: size.width,
     height: size.height,
@@ -89,10 +89,10 @@ function buildCandidateNode(
     label: candidate.name,
     summary:
       scorecard.overallScore === null
-        ? "No overall score yet."
-        : `Overall ${scorecard.overallScore.toFixed(1)} with ${Math.round(
+        ? "暂时还没有总分。"
+        : `总分 ${scorecard.overallScore.toFixed(1)}，覆盖率 ${Math.round(
             scorecard.coverage * 100
-          )}% coverage.`,
+          )}%。`,
     position: { x: 0, y: 0 },
     width: size.width,
     height: size.height,
@@ -115,7 +115,7 @@ function buildGapNode(gap: GapPriority, dimensionName: string): RelationshipGrap
   return {
     id: `gap:${gap.dimensionId}`,
     kind: "gap",
-    label: `${dimensionName} gap`,
+    label: `${dimensionName} 差距`,
     summary: gap.summary,
     position: { x: 0, y: 0 },
     width: size.width,
@@ -249,8 +249,8 @@ export function buildRelationshipGraph(
         kind: "goal_to_dimension",
         source: goalNode.id,
         target: dimensionNode.id,
-        label: "Active dimension",
-        summary: `${dimension.name} is active for this goal.`,
+        label: "激活维度",
+        summary: `${dimension.name} 当前已被纳入目标分析。`,
         dimensionId: dimension.id
       })
     );
@@ -282,10 +282,10 @@ export function buildRelationshipGraph(
           kind: "dimension_to_candidate",
           source: dimensionNode.id,
           target: `candidate:${candidate.id}`,
-          label: `${dimensionScorecard.score.toFixed(1)} score`,
-          summary: `${candidate.name} has an evidence-backed ${dimension.name} score of ${dimensionScorecard.score.toFixed(
+          label: `${dimensionScorecard.score.toFixed(1)} 分`,
+          summary: `${candidate.name} 在 ${dimension.name} 上有 ${dimensionScorecard.score.toFixed(
             1
-          )}.`,
+          )} 分的证据支撑得分。`,
           dimensionId: dimension.id,
           candidateId: candidate.id
         })
@@ -311,7 +311,7 @@ export function buildRelationshipGraph(
         kind: "dimension_to_gap",
         source: dimensionNode.id,
         target: gapNode.id,
-        label: `Priority ${gap.priority?.toFixed(1) ?? "0.0"}`,
+        label: `优先级 ${gap.priority?.toFixed(1) ?? "0.0"}`,
         summary: gap.summary,
         dimensionId: dimension.id
       })

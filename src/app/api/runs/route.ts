@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     return Response.json({ run }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create the draft run.";
+    const message = error instanceof Error ? error.message : "创建分析运行失败。";
 
     return Response.json({ error: message }, { status: 400 });
   }

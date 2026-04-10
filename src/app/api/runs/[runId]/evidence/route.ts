@@ -22,12 +22,12 @@ export async function POST(request: Request, context: RouteContext) {
   const run = await getRunById(runId);
 
   if (!run) {
-    return Response.json({ error: "Run not found." }, { status: 404 });
+    return Response.json({ error: "未找到该运行记录。" }, { status: 404 });
   }
 
   if (!canGenerateEvidence(run.status) || run.candidates.length === 0) {
     return Response.json(
-      { error: "Persisted candidates are required before generating evidence." },
+      { error: "生成证据前，必须先有已保存的候选结果。" },
       { status: 400 }
     );
   }

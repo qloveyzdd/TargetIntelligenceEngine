@@ -103,9 +103,9 @@ describe("VisualIntelligenceSurface", () => {
   it("renders radar, relationship, and shared explanation regions when scoring exists", () => {
     const markup = renderToStaticMarkup(<VisualIntelligenceSurface run={createRun()} />);
 
-    expect(markup).toContain("Radar comparison");
-    expect(markup).toContain("Relationship map");
-    expect(markup).toContain("Goal overview");
+    expect(markup).toContain("雷达对比");
+    expect(markup).toContain("关系图谱");
+    expect(markup).toContain("目标概览");
   });
 
   it("does not render anything when scoring is missing", () => {

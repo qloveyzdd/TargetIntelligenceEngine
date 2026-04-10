@@ -112,7 +112,7 @@ describe("buildVisualExplanation", () => {
     expect(explanation?.metrics).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          label: "Overall score",
+          label: "总分",
           value: "84.0"
         })
       ])
@@ -129,11 +129,11 @@ describe("buildVisualExplanation", () => {
       }
     });
 
-    expect(explanation?.subtitle).toBe("Gap explanation");
+    expect(explanation?.subtitle).toBe("差距说明");
     expect(explanation?.related).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          label: "Benchmark candidate",
+          label: "基准候选",
           value: "Product A"
         })
       ])
@@ -152,7 +152,7 @@ describe("buildVisualExplanation", () => {
       }
     });
 
-    expect(explanation?.subtitle).toBe("Relationship explanation");
+    expect(explanation?.subtitle).toBe("关系说明");
     expect(explanation?.evidence).toHaveLength(1);
     expect(explanation?.summary).toContain("strong cost evidence");
   });

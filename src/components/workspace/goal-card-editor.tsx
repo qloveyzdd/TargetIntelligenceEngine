@@ -28,7 +28,7 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
 
   function saveRun(status: AnalysisRun["status"]) {
     if (!draft) {
-      setError("There is no GoalCard to edit.");
+      setError("当前没有可编辑的 GoalCard。");
       return;
     }
 
@@ -55,15 +55,13 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
           };
 
           if (!response.ok || !payload.run) {
-            setError(payload.error ?? "Failed to save the GoalCard.");
+            setError(payload.error ?? "保存 GoalCard 失败。");
             return;
           }
 
           onRunChanged(payload.run);
         } catch (saveError) {
-          setError(
-            saveError instanceof Error ? saveError.message : "Failed to save the GoalCard."
-          );
+          setError(saveError instanceof Error ? saveError.message : "保存 GoalCard 失败。");
         }
       })();
     });
@@ -77,7 +75,7 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
     <div style={styles.wrapper} data-testid="goal-card-editor">
       <div style={styles.grid}>
         <label style={styles.field}>
-          <span style={styles.label}>Name</span>
+          <span style={styles.label}>名称</span>
           <input
             data-testid="goal-name-input"
             style={styles.input}
@@ -92,7 +90,7 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
         </label>
 
         <label style={styles.field}>
-          <span style={styles.label}>Category</span>
+          <span style={styles.label}>类别</span>
           <input
             data-testid="goal-category-input"
             style={styles.input}
@@ -107,7 +105,7 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
         </label>
 
         <label style={styles.field}>
-          <span style={styles.label}>Current stage</span>
+          <span style={styles.label}>当前阶段</span>
           <select
             data-testid="goal-stage-select"
             style={styles.input}
@@ -119,16 +117,16 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
               })
             }
           >
-            <option value="idea">idea</option>
-            <option value="validation">validation</option>
-            <option value="mvp">mvp</option>
-            <option value="growth">growth</option>
+            <option value="idea">想法</option>
+            <option value="validation">验证</option>
+            <option value="mvp">MVP</option>
+            <option value="growth">增长</option>
           </select>
         </label>
       </div>
 
       <label style={styles.field}>
-        <span style={styles.label}>Job to be done</span>
+        <span style={styles.label}>核心任务</span>
         <textarea
           data-testid="goal-jtbd-input"
           rows={4}
@@ -145,7 +143,7 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
 
       <div style={styles.grid}>
         <label style={styles.field}>
-          <span style={styles.label}>Hard constraints</span>
+          <span style={styles.label}>硬约束</span>
           <textarea
             data-testid="goal-hard-constraints-input"
             rows={4}
@@ -161,7 +159,7 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
         </label>
 
         <label style={styles.field}>
-          <span style={styles.label}>Soft preferences</span>
+          <span style={styles.label}>软偏好</span>
           <textarea
             data-testid="goal-soft-preferences-input"
             rows={4}
@@ -185,7 +183,7 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
           onClick={() => saveRun("goal_ready")}
           data-testid="save-goal-card"
         >
-          {isPending ? "Saving..." : "Save draft"}
+          {isPending ? "保存中..." : "保存草稿"}
         </button>
         <button
           type="button"
@@ -194,7 +192,7 @@ export function GoalCardEditor({ run, onRunChanged }: GoalCardEditorProps) {
           onClick={() => saveRun("goal_confirmed")}
           data-testid="confirm-goal-card"
         >
-          {isPending ? "Confirming..." : "Confirm GoalCard"}
+          {isPending ? "确认中..." : "确认 GoalCard"}
         </button>
         {error ? <p style={styles.error}>{error}</p> : null}
       </div>

@@ -46,7 +46,7 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
           };
 
           if (!response.ok || !payload.run) {
-            setError(payload.error ?? "Failed to generate candidates.");
+            setError(payload.error ?? "生成候选失败。");
             return;
           }
 
@@ -55,7 +55,7 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
           setError(
             generationError instanceof Error
               ? generationError.message
-              : "Failed to generate candidates."
+              : "生成候选失败。"
           );
         }
       })();
@@ -65,7 +65,7 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
   if (!canShowCandidatePanel(run.status)) {
     return (
       <p style={styles.waiting}>
-        Candidates stay locked until the SearchPlan is confirmed as `search_plan_confirmed`.
+        候选列表要等检索计划确认成 `search_plan_confirmed` 后才可用。
       </p>
     );
   }
@@ -74,8 +74,7 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
     return (
       <div style={styles.emptyState}>
         <p style={styles.waiting}>
-          Generate candidate recall now that the SearchPlan is confirmed. This produces the
-          ordered candidate list and marks the top-5 deep-dive set for evidence intake.
+          检索计划确认后，就可以生成候选召回。这里会产出有序候选列表，并标记前 5 个深挖对象供证据采集使用。
         </p>
         <button
           type="button"
@@ -84,7 +83,7 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
           disabled={isPending}
           data-testid="generate-candidates"
         >
-          {isPending ? "Generating..." : "Generate candidates"}
+          {isPending ? "生成中..." : "生成候选"}
         </button>
         {error ? <p style={styles.error}>{error}</p> : null}
       </div>
@@ -95,8 +94,7 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
     <div style={styles.wrapper} data-testid="candidates-panel">
       <div style={styles.toolbar}>
         <p style={styles.waiting}>
-          Candidate recall is persisted on the run. Rows marked as `Deep-dive set` are the
-          only ones Phase 3 will send into evidence intake.
+          候选召回结果会持久化在当前运行上。带有“深挖集合”标记的条目，才会进入 Phase 3 的证据采集。
         </p>
         <button
           type="button"
@@ -105,7 +103,7 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
           disabled={isPending}
           data-testid="regenerate-candidates"
         >
-          {isPending ? "Refreshing..." : "Regenerate candidates"}
+          {isPending ? "刷新中..." : "重新生成候选"}
         </button>
       </div>
 
@@ -120,20 +118,21 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
               <div>
                 <strong>{candidate.recallRank}. {candidate.name}</strong>
                 <p style={styles.meta}>
-                  Modes: {candidate.matchedModes.join(", ")}
+                  模式：{candidate.matchedModes.join(", ")}
                 </p>
               </div>
               {isDeepDiveCandidate(candidate) ? (
                 <span style={styles.deepDiveBadge} data-testid="candidate-deep-dive-badge">
-                  Deep-dive set
+                  深挖集合
                 </span>
               ) : null}
             </div>
             <p style={styles.body}>
-              Strength dimensions:{" "}
+              强项维度：
+              {" "}
               {candidate.strengthDimensions.length > 0
                 ? candidate.strengthDimensions.join(", ")
-                : "No explicit dimension signal yet"}
+                : "暂时还没有明显信号"}
             </p>
             {candidate.officialUrl ? (
               <a
@@ -145,10 +144,10 @@ export function CandidatesPanel({ run, onRunChanged }: CandidatesPanelProps) {
                 {candidate.officialUrl}
               </a>
             ) : (
-              <p style={styles.meta}>No official URL captured yet.</p>
+              <p style={styles.meta}>暂未识别到官方链接。</p>
             )}
             <p style={styles.meta}>
-              Queries: {candidate.matchedQueries.join(" | ")}
+              命中检索词：{candidate.matchedQueries.join(" | ")}
             </p>
           </article>
         ))}
