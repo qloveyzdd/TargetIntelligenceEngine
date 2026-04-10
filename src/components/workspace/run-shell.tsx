@@ -12,6 +12,7 @@ import { GoalCardEditor } from "./goal-card-editor";
 import { GoalInputForm } from "./goal-input-form";
 import { ScoringPanel } from "./scoring-panel";
 import { SearchPlanPanel } from "./search-plan-panel";
+import { StageGoalsPanel } from "./stage-goals-panel";
 import { VisualIntelligenceSurface } from "./visual-intelligence-surface";
 
 type RunShellProps = {
@@ -324,7 +325,29 @@ export function RunShell({ run = null }: RunShellProps) {
         </section>
       ) : null}
 
-      <AnalysisPlaceholders statusLabel={currentRun?.status ?? "draft"} />
+      {currentRun?.scoring ? (
+        <section style={styles.panel}>
+          <div style={styles.panelHeader}>
+            <div>
+              <p style={styles.sectionEyebrow}>Stage Goals</p>
+              <h2 style={styles.sectionTitle}>Stage goals and handoff</h2>
+            </div>
+            <span style={styles.panelMeta}>
+              {currentRun.stageGoals.length > 0 ? `${currentRun.stageGoals.length} stage goals` : "not generated"}
+            </span>
+          </div>
+          <StageGoalsPanel
+            key={`${currentRun.id}:${currentRun.updatedAt}:stage-goals`}
+            run={currentRun}
+            onRunChanged={setCurrentRun}
+          />
+        </section>
+      ) : null}
+
+      <AnalysisPlaceholders
+        statusLabel={currentRun?.status ?? "draft"}
+        hasScoring={Boolean(currentRun?.scoring)}
+      />
     </div>
   );
 }

@@ -44,9 +44,9 @@
 
 ### Stage Goals
 
-- [ ] **STAG-01**: The system can generate validation, MVP, and differentiation stage goals.
-- [ ] **STAG-02**: Each stage goal includes `related_dimensions`, `reference_products`, `success_metrics`, `deliverables`, and `risks`.
-- [ ] **STAG-03**: The user can export stage goals as structured output for later GSD planning.
+- [x] **STAG-01**: The system can generate validation, MVP, and differentiation stage goals.
+- [x] **STAG-02**: Each stage goal includes `related_dimensions`, `reference_products`, `success_metrics`, `deliverables`, and `risks`.
+- [x] **STAG-03**: The user can export stage goals as structured output for later GSD planning.
 
 ## v2 Requirements
 
@@ -100,9 +100,9 @@
 | SCOR-02 | Phase 4 | Complete |
 | VIZ-01 | Phase 5 | Complete |
 | VIZ-02 | Phase 5 | Complete |
-| STAG-01 | Phase 6 | Pending |
-| STAG-02 | Phase 6 | Pending |
-| STAG-03 | Phase 6 | Pending |
+| STAG-01 | Phase 6 | Complete |
+| STAG-02 | Phase 6 | Complete |
+| STAG-03 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 22 total
@@ -111,4 +111,4 @@
 
 ---
 *Requirements defined: 2026-04-10*  
-*Last updated: 2026-04-10 after Phase 5 completion*
+*Last updated: 2026-04-10 after Phase 6 completion*

@@ -131,11 +131,14 @@ export type AnalysisRunScoring = {
   gaps: GapPriority[];
 };
 
+export type StageGoalStage = "validation" | "mvp" | "differentiation";
+
 export type StageGoal = {
-  stage: string;
+  stage: StageGoalStage;
   objective: string;
+  basedOnGaps: string[];
   relatedDimensions: string[];
-  benchmarkProducts: string[];
+  referenceProducts: string[];
   successMetrics: string[];
   deliverables: string[];
   risks: string[];

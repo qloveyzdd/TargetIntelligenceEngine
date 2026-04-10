@@ -1,28 +1,27 @@
 type AnalysisPlaceholdersProps = {
   statusLabel?: string;
+  hasScoring?: boolean;
 };
 
-const sections = [
-  {
-    title: "Stage Goals",
-    description:
-      "Stage goals stay as the remaining placeholder until scoring and the gap engine can produce evidence-backed milestones."
-  }
-];
-
 export function AnalysisPlaceholders({
-  statusLabel = "draft"
+  statusLabel = "draft",
+  hasScoring = false
 }: AnalysisPlaceholdersProps) {
+  if (hasScoring) {
+    return null;
+  }
+
   return (
     <section style={styles.grid}>
-      {sections.map((section) => (
-        <article key={section.title} style={styles.card}>
-          <div style={styles.badge}>Placeholder after Evidence</div>
-          <h3 style={styles.cardTitle}>{section.title}</h3>
-          <p style={styles.cardDescription}>{section.description}</p>
-          <p style={styles.cardMeta}>Current run status: {statusLabel}</p>
-        </article>
-      ))}
+      <article style={styles.card}>
+        <div style={styles.badge}>Workspace status</div>
+        <h3 style={styles.cardTitle}>Next layer unlocks after scoring</h3>
+        <p style={styles.cardDescription}>
+          Once scoring exists, the workspace will replace this status card with the real
+          stage-goals and handoff surface.
+        </p>
+        <p style={styles.cardMeta}>Current run status: {statusLabel}</p>
+      </article>
     </section>
   );
 }

@@ -1,5 +1,6 @@
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { requestRunScoring } from "./run-shell";
+import { RunShell, requestRunScoring } from "./run-shell";
 
 describe("requestRunScoring", () => {
   it("posts to the scoring route and returns the persisted run", async () => {
@@ -59,5 +60,34 @@ describe("requestRunScoring", () => {
         fetchImpl
       })
     ).rejects.toThrow("Persisted evidence is required before generating scoring.");
+  });
+
+  it("mounts the stage goals section once scoring exists", () => {
+    const markup = renderToStaticMarkup(
+      <RunShell
+        run={{
+          id: "run-1",
+          status: "evidence_ready",
+          inputText: "Build an explainable target intelligence engine.",
+          inputNotes: null,
+          goal: null,
+          dimensions: [],
+          searchPlan: null,
+          candidates: [],
+          evidence: [],
+          scoring: {
+            generatedAt: "2026-04-10T00:00:00.000Z",
+            candidateScorecards: [],
+            gaps: []
+          },
+          stageGoals: [],
+          createdAt: "2026-04-10T00:00:00.000Z",
+          updatedAt: "2026-04-10T00:00:00.000Z"
+        }}
+      />
+    );
+
+    expect(markup).toContain("Stage goals and handoff");
+    expect(markup).toContain("Generate stage goals");
   });
 });

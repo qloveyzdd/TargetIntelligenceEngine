@@ -392,20 +392,52 @@ function toStageGoals(value: unknown): StageGoal[] {
     return [];
   }
 
-  return value.filter((item): item is StageGoal => {
+  return value.flatMap((item) => {
     if (!isRecord(item)) {
-      return false;
+      return [];
     }
 
-    return (
-      typeof item.stage === "string" &&
-      typeof item.objective === "string" &&
-      Array.isArray(item.relatedDimensions) &&
-      Array.isArray(item.benchmarkProducts) &&
-      Array.isArray(item.successMetrics) &&
-      Array.isArray(item.deliverables) &&
-      Array.isArray(item.risks)
-    );
+    if (
+      typeof item.stage !== "string" ||
+      typeof item.objective !== "string"
+    ) {
+      return [];
+    }
+
+    const basedOnGaps = toStringArray(item.basedOnGaps);
+    const relatedDimensions = toStringArray(item.relatedDimensions);
+    const referenceProducts = toStringArray(item.referenceProducts);
+    const successMetrics = toStringArray(item.successMetrics);
+    const deliverables = toStringArray(item.deliverables);
+    const risks = toStringArray(item.risks);
+
+    if (
+      basedOnGaps.length !== (Array.isArray(item.basedOnGaps) ? item.basedOnGaps.length : -1) ||
+      relatedDimensions.length !==
+        (Array.isArray(item.relatedDimensions) ? item.relatedDimensions.length : -1) ||
+      referenceProducts.length !==
+        (Array.isArray(item.referenceProducts) ? item.referenceProducts.length : -1) ||
+      successMetrics.length !==
+        (Array.isArray(item.successMetrics) ? item.successMetrics.length : -1) ||
+      deliverables.length !==
+        (Array.isArray(item.deliverables) ? item.deliverables.length : -1) ||
+      risks.length !== (Array.isArray(item.risks) ? item.risks.length : -1)
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        stage: item.stage as StageGoal["stage"],
+        objective: item.objective,
+        basedOnGaps,
+        relatedDimensions,
+        referenceProducts,
+        successMetrics,
+        deliverables,
+        risks
+      } satisfies StageGoal
+    ];
   });
 }
 

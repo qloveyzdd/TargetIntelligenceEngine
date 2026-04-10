@@ -58,6 +58,41 @@ function buildScoringFixture() {
   };
 }
 
+function buildStageGoalsFixture() {
+  return [
+    {
+      stage: "validation" as const,
+      objective: "Validate the minimum threshold for cost.",
+      basedOnGaps: ["cost"],
+      relatedDimensions: ["cost"],
+      referenceProducts: ["OpenAI Responses"],
+      successMetrics: ["Cost evidence is no longer unknown."],
+      deliverables: ["Pricing benchmark notes"],
+      risks: ["Treating low coverage as low score."]
+    },
+    {
+      stage: "mvp" as const,
+      objective: "Close the core cost gap.",
+      basedOnGaps: ["cost"],
+      relatedDimensions: ["cost"],
+      referenceProducts: ["OpenAI Responses"],
+      successMetrics: ["Cost score moves closer to the benchmark."],
+      deliverables: ["Updated packaging assumptions"],
+      risks: ["Over-optimizing cost before usability."]
+    },
+    {
+      stage: "differentiation" as const,
+      objective: "Turn cost clarity into a clearer product edge.",
+      basedOnGaps: ["cost"],
+      relatedDimensions: ["cost"],
+      referenceProducts: ["OpenAI Responses"],
+      successMetrics: ["Cost positioning stays evidence-backed."],
+      deliverables: ["Differentiation notes"],
+      risks: ["Losing focus on core execution."]
+    }
+  ];
+}
+
 describe("analysis run repository", () => {
   beforeEach(() => {
     globalThis.__targetIntelligenceMemoryRuns = new Map();
@@ -170,6 +205,7 @@ describe("analysis run repository", () => {
           }
         ],
         scoring,
+        stageGoals: buildStageGoalsFixture(),
         status: "evidence_ready"
       },
       store
@@ -182,6 +218,7 @@ describe("analysis run repository", () => {
     expect(updated?.evidence[0]?.id).toBe("evi-cost-1");
     expect(updated?.scoring?.candidateScorecards[0]?.overallScore).toBe(81.4);
     expect(updated?.scoring?.gaps[0]?.benchmarkEvidenceIds).toEqual(["evi-cost-1"]);
+    expect(updated?.stageGoals[0]?.referenceProducts).toEqual(["OpenAI Responses"]);
   });
 
   it("clears persisted scoring when evidence changes upstream", async () => {
@@ -210,7 +247,8 @@ describe("analysis run repository", () => {
             capturedAt: "2026-04-10T00:10:00.000Z"
           }
         ],
-        scoring: buildScoringFixture()
+        scoring: buildScoringFixture(),
+        stageGoals: buildStageGoalsFixture()
       },
       store
     );
@@ -239,6 +277,7 @@ describe("analysis run repository", () => {
 
     expect(updated?.evidence[0]?.id).toBe("evi-cost-2");
     expect(updated?.scoring).toBeNull();
+    expect(updated?.stageGoals).toEqual([]);
   });
 
   it("keeps persisted scoring when only the run status changes", async () => {
@@ -271,5 +310,41 @@ describe("analysis run repository", () => {
     const updated = await getRunById(run.id, store);
 
     expect(updated?.scoring?.generatedAt).toBe(scoring.generatedAt);
+  });
+
+  it("clears persisted stage goals when scoring changes explicitly", async () => {
+    const store = createInMemoryAnalysisRunStore();
+    const run = await createDraftRun(
+      {
+        inputText: "Build an analysis workspace"
+      },
+      store
+    );
+
+    await updateRunAggregate(
+      run.id,
+      {
+        status: "evidence_ready",
+        scoring: buildScoringFixture(),
+        stageGoals: buildStageGoalsFixture()
+      },
+      store
+    );
+
+    await updateRunAggregate(
+      run.id,
+      {
+        scoring: {
+          ...buildScoringFixture(),
+          generatedAt: "2026-04-10T01:00:00.000Z"
+        }
+      },
+      store
+    );
+
+    const updated = await getRunById(run.id, store);
+
+    expect(updated?.scoring?.generatedAt).toBe("2026-04-10T01:00:00.000Z");
+    expect(updated?.stageGoals).toEqual([]);
   });
 });

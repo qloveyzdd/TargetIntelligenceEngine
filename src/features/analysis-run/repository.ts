@@ -26,6 +26,7 @@ const scoringInvalidationKeys = [
   "candidates",
   "evidence"
 ] as const;
+const stageGoalInvalidationKeys = [...scoringInvalidationKeys, "scoring"] as const;
 
 function hasOwnUpdate<Key extends keyof AnalysisRunUpdate>(
   update: AnalysisRunUpdate,
@@ -48,14 +49,35 @@ function shouldClearScoring(current: AnalysisRun, update: AnalysisRunUpdate) {
   });
 }
 
+function shouldClearStageGoals(current: AnalysisRun, update: AnalysisRunUpdate) {
+  if (hasOwnUpdate(update, "stageGoals")) {
+    return false;
+  }
+
+  return stageGoalInvalidationKeys.some((key) => {
+    if (!hasOwnUpdate(update, key)) {
+      return false;
+    }
+
+    return JSON.stringify(current[key]) !== JSON.stringify(update[key]);
+  });
+}
+
 function normalizeRunUpdate(current: AnalysisRun, update: AnalysisRunUpdate): AnalysisRunUpdate {
-  if (!shouldClearScoring(current, update)) {
-    return update;
+  const normalizedUpdate = shouldClearScoring(current, update)
+    ? {
+        ...update,
+        scoring: null
+      }
+    : update;
+
+  if (!shouldClearStageGoals(current, normalizedUpdate)) {
+    return normalizedUpdate;
   }
 
   return {
-    ...update,
-    scoring: null
+    ...normalizedUpdate,
+    stageGoals: []
   };
 }
 
