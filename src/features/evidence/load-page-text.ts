@@ -50,11 +50,13 @@ export async function loadPageText(url: string) {
       return normalized;
     }
   } catch {
+    // Ignore fetch failures and try the browser fallback.
   }
 
   try {
     return await loadWithPlaywright(url);
   } catch {
+    // Ignore browser failures and let the caller skip this source.
     return "";
   }
 }
