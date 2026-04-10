@@ -72,7 +72,7 @@ OPENAI_BASE_URL=
 2. 配置 `DATABASE_URL`
 3. 配置 `OPENAI_API_KEY`
 4. 如果不是直连官方 OpenAI，再配置 `OPENAI_BASE_URL`
-4. 初始化数据库表
+5. 初始化数据库表
 
 启动本地 PostgreSQL：
 
