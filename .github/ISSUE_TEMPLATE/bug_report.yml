@@ -1,0 +1,52 @@
+name: Bug Report
+description: 报告一个可复现的问题
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提交前请先确认：
+        - 你已经阅读过 README
+        - 你已经尽量用最新代码复现
+        - 你会提供最小复现信息
+  - type: textarea
+    id: summary
+    attributes:
+      label: 问题描述
+      description: 用几句话说明发生了什么
+      placeholder: 例如：点击“生成证据”后请求长时间无响应，最终返回 500
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 请按顺序描述
+      placeholder: |
+        1. 配置 .env
+        2. 运行 npm run dev
+        3. 打开首页并创建 run
+        4. 点击某个按钮后出现问题
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期结果
+      placeholder: 你原本期望发生什么
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志或截图
+      description: 可以粘贴报错、控制台日志、接口响应等
+      render: shell
+  - type: input
+    id: environment
+    attributes:
+      label: 运行环境
+      description: 例如 Windows 11 / Node 20 / npm 11
+      placeholder: Windows 11, Node 20.x, npm 11.x

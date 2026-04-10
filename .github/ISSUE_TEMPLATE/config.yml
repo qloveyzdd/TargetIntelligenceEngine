@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 使用说明
+    url: https://github.com/qloveyzdd/TargetIntelligenceEngine/blob/master/README.md
+    about: 先查看 README 里的运行方式和使用流程
+  - name: 安全问题
+    url: https://github.com/qloveyzdd/TargetIntelligenceEngine/blob/master/SECURITY.md
+    about: 安全问题请按 SECURITY.md 指引处理，不要直接公开细节
