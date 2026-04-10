@@ -4,9 +4,9 @@ milestone: v1.0
 milestone_name: milestone
 current_phase_name: visual intelligence surface
 status: planning
-stopped_at: Phase 4 execution complete
-last_updated: "2026-04-09T23:47:25.498Z"
-last_activity: 2026-04-10 -- Phase 4 execution complete
+stopped_at: Phase 5 discuss complete
+last_updated: "2026-04-10T07:59:05.0580234+08:00"
+last_activity: 2026-04-10 -- Phase 5 discuss complete
 progress:
   total_phases: 6
   completed_phases: 4
@@ -26,12 +26,12 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 
 ## Current Position
 
-Phase: 05 (visual-intelligence-surface) - READY FOR DISCUSS
+Phase: 05 (visual-intelligence-surface) - READY FOR PLANNING
 Current Phase Name: visual intelligence surface
 Plan: Not started
-Status: Ready for Phase 05 discuss
-Last activity: 2026-04-10 -- Phase 4 execution complete
-Last Activity Description: Phase 4 explainable scoring and gap engine completed - verification green
+Status: Ready for Phase 05 planning
+Last activity: 2026-04-10 -- Phase 5 discuss complete
+Last Activity Description: Phase 5 visual intelligence surface context captured and ready for planning
 
 Progress: [####-] 86%
 
@@ -69,6 +69,9 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 2]: SearchPlan is a confirmable draft artifact, not candidate results
 - [Phase 3]: Candidate recall uses mixed public-source recall but official evidence priority
 - [Phase 3]: Evidence stays fine-grained as candidate + dimension + source URL
+- [Phase 4]: Unknown dimensions are excluded from overall score and surfaced via coverage
+- [Phase 5]: Radar defaults to target plus top 3 scored candidates
+- [Phase 5]: Relationship graph first renders Goal / Dimension / Candidate / Gap
 
 ### Pending Todos
 
@@ -76,11 +79,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- Radar chart and relationship graph remain deferred to Phase 5
 - Stage Goals and GSD handoff remain deferred to Phase 6
 
 ## Session Continuity
 
-Last session: 2026-04-09T22:09:53.161Z
-Stopped at: Phase 4 execution complete
-Resume file: .planning/ROADMAP.md
+Last session: 2026-04-10T07:59:05.0580234+08:00
+Stopped at: Phase 5 discuss complete
+Resume file: .planning/phases/05-visual-intelligence-surface/05-CONTEXT.md
