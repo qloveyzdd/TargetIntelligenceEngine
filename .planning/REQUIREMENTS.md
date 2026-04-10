@@ -1,81 +1,81 @@
 # Requirements: Target Intelligence Engine
 
 **Defined:** 2026-04-10  
-**Core Value:** 让目标拆解、竞品映射和阶段规划建立在可追溯证据上，而不是模型主观判断。
+**Core Value:** Make target decomposition, competitor mapping, and stage planning evidence-first instead of model-opinion-first.
 
 ## v1 Requirements
 
 ### Goal Intake
 
-- [x] **GOAL-01**: 用户可以输入一句自然语言目标描述发起分析
-- [x] **GOAL-02**: 用户可以补充额外上下文文本，例如约束、偏好和当前阶段
-- [x] **GOAL-03**: 系统可以把输入整理成结构化 GoalCard，至少包含名称、类别、JTBD、硬约束、软偏好和当前阶段
-- [x] **GOAL-04**: 用户可以在执行检索前查看并修改 GoalCard
+- [x] **GOAL-01**: The user can start an analysis by entering a natural-language goal description.
+- [x] **GOAL-02**: The user can add supporting context such as constraints, preferences, and current stage.
+- [x] **GOAL-03**: The system turns that input into a structured GoalCard.
+- [x] **GOAL-04**: The user can review and edit the GoalCard before continuing.
 
 ### Dimensions
 
-- [x] **DIME-01**: 系统可以输出通用层、领域层、项目层合并后的维度列表
-- [x] **DIME-02**: 用户可以调整每个维度的权重
-- [x] **DIME-03**: 用户可以查看并修改维度方向、定义和证据需求
-- [x] **DIME-04**: 用户可以禁用与当前目标无关的维度
+- [x] **DIME-01**: The system outputs a merged dimension list across core, domain, and project layers.
+- [x] **DIME-02**: The user can adjust dimension weights.
+- [x] **DIME-03**: The user can review and edit direction, definition, and evidence requirements.
+- [x] **DIME-04**: The user can disable dimensions that do not fit the current goal.
 
 ### Candidate Search
 
-- [x] **SRCH-01**: 用户可以执行 `same_goal` 检索以寻找同目标候选产品
-- [x] **SRCH-02**: 用户可以针对选中维度执行 `dimension_leader` 检索以寻找单点强者
-- [x] **SRCH-03**: 系统可以展示候选产品列表，并标明每个候选的 `matched_modes`
-- [x] **SRCH-04**: 系统在 v1 中只对首轮排序前 5 个候选做深挖
+- [x] **SRCH-01**: The user can execute `same_goal` searches to find products solving a similar problem.
+- [x] **SRCH-02**: The user can execute `dimension_leader` searches for strong dimension-specific products.
+- [x] **SRCH-03**: The system shows candidate products and their `matched_modes`.
+- [x] **SRCH-04**: v1 only deep-dives the top 5 ranked candidates.
 
 ### Evidence
 
-- [x] **EVID-01**: 用户可以查看某个候选在某个维度下的证据列表
-- [x] **EVID-02**: 每条证据至少包含 `source_type`、`url`、`excerpt`、`extracted_value`、`confidence`、`captured_at`
-- [x] **EVID-03**: 当某个维度证据不足时，系统显示 `unknown` 而不是低分
+- [x] **EVID-01**: The user can inspect evidence for a candidate under a given dimension.
+- [x] **EVID-02**: Every evidence row contains `source_type`, `url`, `excerpt`, `extracted_value`, `confidence`, and `captured_at`.
+- [x] **EVID-03**: When evidence is insufficient, the system shows `unknown` instead of a low score.
 
 ### Scoring
 
-- [x] **SCOR-01**: 用户可以查看维度得分及其证据贡献拆解
-- [x] **SCOR-02**: 用户可以查看整体分数与 `gap_priority` 结果
+- [x] **SCOR-01**: The user can inspect dimension scores and their evidence contribution breakdown.
+- [x] **SCOR-02**: The user can inspect overall score and `gap_priority` results.
 
 ### Visualization
 
-- [ ] **VIZ-01**: 用户可以查看当前目标与候选产品的雷达图对比
-- [ ] **VIZ-02**: 用户可以在关系图中点击维度、产品、边和阶段目标节点查看解释信息
+- [x] **VIZ-01**: The user can view a radar comparison between the current goal and candidate products.
+- [x] **VIZ-02**: The user can click dimensions, products, gaps, and edges to inspect explanations inside the relationship view.
 
 ### Stage Goals
 
-- [ ] **STAG-01**: 系统可以自动生成验证阶段、MVP 阶段、差异化阶段三个阶段目标
-- [ ] **STAG-02**: 每个阶段目标都包含 `related_dimensions`、`reference_products`、`success_metrics`、`deliverables`、`risks`
-- [ ] **STAG-03**: 用户可以导出阶段目标的结构化结果，供后续 GSD 规划流程消费
+- [ ] **STAG-01**: The system can generate validation, MVP, and differentiation stage goals.
+- [ ] **STAG-02**: Each stage goal includes `related_dimensions`, `reference_products`, `success_metrics`, `deliverables`, and `risks`.
+- [ ] **STAG-03**: The user can export stage goals as structured output for later GSD planning.
 
 ## v2 Requirements
 
 ### Additional Inputs
 
-- **INPT-01**: 用户可以直接输入 Git 工程进行分析
-- **INPT-02**: 用户可以直接输入网站链接进行分析
-- **INPT-03**: 用户可以混合使用文本、链接和工程作为输入源
+- **INPT-01**: The user can analyze a Git repository directly.
+- **INPT-02**: The user can analyze a website URL directly.
+- **INPT-03**: The user can mix text, links, and codebase input in one run.
 
 ### Collaboration
 
-- **COLL-01**: 多个用户可以共享同一个分析工作区
-- **COLL-02**: 用户可以对证据和阶段目标留下批注
+- **COLL-01**: Multiple users can share the same analysis workspace.
+- **COLL-02**: Users can leave annotations on evidence and stage goals.
 
 ### Advanced Intelligence
 
-- **ADVN-01**: 系统可以对历史分析运行进行相似目标召回
-- **ADVN-02**: 系统可以对阶段目标生成更完整的执行建议
-- **ADVN-03**: 系统可以支持图数据库驱动的多跳关系探索
+- **ADVN-01**: The system can recall historically similar analysis runs.
+- **ADVN-02**: The system can generate richer execution guidance from stage goals.
+- **ADVN-03**: The system can support graph-database-driven multi-hop exploration.
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| 全网无限深抓 | 首版先控制抓取成本和证据质量 |
-| 无证据自动评分 | 与项目核心价值冲突 |
-| 一开始接入图数据库 | 当前 MVP 不需要复杂图算法 |
-| 自动输出完整商业计划书 | 超出证据链 MVP 范围 |
-| 团队权限与多租户 | 不是首版核心路径 |
+| Unlimited whole-web crawling | v1 keeps crawling cost and evidence quality controlled |
+| Evidence-free automatic scoring | Conflicts with the evidence-first core value |
+| Starting with a graph database | MVP does not need complex graph algorithms yet |
+| Automatic full business-plan generation | Beyond the MVP evidence chain |
+| Team permissions and multi-tenant support | Not part of the first release path |
 
 ## Traceability
 
@@ -98,8 +98,8 @@
 | EVID-03 | Phase 4 | Complete |
 | SCOR-01 | Phase 4 | Complete |
 | SCOR-02 | Phase 4 | Complete |
-| VIZ-01 | Phase 5 | Pending |
-| VIZ-02 | Phase 5 | Pending |
+| VIZ-01 | Phase 5 | Complete |
+| VIZ-02 | Phase 5 | Complete |
 | STAG-01 | Phase 6 | Pending |
 | STAG-02 | Phase 6 | Pending |
 | STAG-03 | Phase 6 | Pending |
@@ -111,4 +111,4 @@
 
 ---
 *Requirements defined: 2026-04-10*  
-*Last updated: 2026-04-10 after Phase 4 completion*
+*Last updated: 2026-04-10 after Phase 5 completion*

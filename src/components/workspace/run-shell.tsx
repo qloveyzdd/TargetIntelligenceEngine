@@ -12,6 +12,7 @@ import { GoalCardEditor } from "./goal-card-editor";
 import { GoalInputForm } from "./goal-input-form";
 import { ScoringPanel } from "./scoring-panel";
 import { SearchPlanPanel } from "./search-plan-panel";
+import { VisualIntelligenceSurface } from "./visual-intelligence-surface";
 
 type RunShellProps = {
   run?: AnalysisRun | null;
@@ -303,6 +304,22 @@ export function RunShell({ run = null }: RunShellProps) {
             isPending={isScoringPending}
             error={scoringError}
             onGenerate={handleGenerateScoring}
+          />
+        </section>
+      ) : null}
+
+      {currentRun?.scoring ? (
+        <section style={styles.panel}>
+          <div style={styles.panelHeader}>
+            <div>
+              <p style={styles.sectionEyebrow}>Visual Intelligence</p>
+              <h2 style={styles.sectionTitle}>Radar and relationship views</h2>
+            </div>
+            <span style={styles.panelMeta}>visuals ready</span>
+          </div>
+          <VisualIntelligenceSurface
+            key={`${currentRun.id}:${currentRun.updatedAt}:visual-surface`}
+            run={currentRun}
           />
         </section>
       ) : null}
