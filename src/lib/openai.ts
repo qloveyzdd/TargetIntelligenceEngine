@@ -10,6 +10,7 @@ export function getOpenAIClient() {
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
+  const baseURL = process.env.OPENAI_BASE_URL?.trim();
 
   if (!apiKey) {
     throw new Error(
@@ -17,7 +18,10 @@ export function getOpenAIClient() {
     );
   }
 
-  globalThis.__targetIntelligenceOpenAI = new OpenAI({ apiKey });
+  globalThis.__targetIntelligenceOpenAI = new OpenAI({
+    apiKey,
+    baseURL: baseURL || undefined
+  });
 
   return globalThis.__targetIntelligenceOpenAI;
 }
