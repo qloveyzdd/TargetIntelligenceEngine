@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase_name: stage goals and gsd handoff
-status: ready
-stopped_at: Phase 5 execution complete
-last_updated: "2026-04-10T09:33:16.2435227+08:00"
-last_activity: 2026-04-10 -- Phase 5 execution complete
+status: planning
+stopped_at: Phase 6 context gathered
+last_updated: "2026-04-10T09:42:48.7691919+08:00"
+last_activity: 2026-04-10 -- Phase 6 context gathered
 progress:
   total_phases: 6
   completed_phases: 5
@@ -26,12 +26,12 @@ See: .planning/PROJECT.md (updated 2026-04-10)
 
 ## Current Position
 
-Phase: 06 (stage-goals-gsd-handoff) - READY TO DISCUSS
+Phase: 06 (stage-goals-gsd-handoff) - READY FOR PLANNING
 Current Phase Name: stage goals and gsd handoff
-Plan: none yet
-Status: Ready to discuss Phase 06
-Last activity: 2026-04-10 -- Phase 5 execution complete
-Last Activity Description: Phase 5 visual intelligence surface executed, verified, and closed
+Plan: Not started
+Status: Ready for Phase 06 planning
+Last activity: 2026-04-10 -- Phase 6 context gathered
+Last Activity Description: Phase 6 context captured with fixed 3-stage goals, gap-driven synthesis, expanded StageGoal contract, and structured GSD handoff boundary
 
 Progress: [#####] 100%
 
@@ -74,6 +74,9 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - [Phase 5]: Radar defaults to target plus top 3 scored candidates
 - [Phase 5]: Relationship graph first renders Goal / Dimension / Candidate / Gap
 - [Phase 5]: Radar and graph share one explanation surface inside the existing run workspace
+- [Phase 6]: Stage goals stay fixed to validation, MVP, and differentiation
+- [Phase 6]: Stage goals are derived from `gap_priority` plus dependency ordering, not freeform roadmap generation
+- [Phase 6]: Handoff stays at structured `stageGoals` plus per-stage focus, not full GSD phase planning
 
 ### Pending Todos
 
@@ -85,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-10T09:33:16.2435227+08:00
-Stopped at: Phase 5 execution complete
-Resume file: .planning/ROADMAP.md
+Last session: 2026-04-10T09:42:48.7691919+08:00
+Stopped at: Phase 6 context gathered
+Resume file: .planning/phases/06-stage-goals-gsd-handoff/06-CONTEXT.md
