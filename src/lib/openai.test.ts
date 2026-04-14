@@ -38,4 +38,15 @@ describe("openai provider compatibility", () => {
     ).toBe("dashscope");
     expect(supportsResponsesWebSearch("qwen-plus")).toBe(true);
   });
+
+  it("detects minimax and prefers chat completions for structured json", () => {
+    expect(
+      detectOpenAIProvider({
+        baseURL: "https://api.minimaxi.com/v1",
+        model: "MiniMax-M1-80k"
+      })
+    ).toBe("minimax");
+    expect(shouldUseChatCompletionsForStructuredJson("MiniMax-M1-80k")).toBe(true);
+    expect(supportsResponsesWebSearch("MiniMax-M1-80k")).toBe(false);
+  });
 });

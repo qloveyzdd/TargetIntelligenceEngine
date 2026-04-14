@@ -188,6 +188,40 @@ describe("generate candidate drafts", () => {
     expect(candidates[0]?.name).toBe("Perplexity");
   });
 
+  it("uses chat completions directly for minimax models", async () => {
+    process.env.OPENAI_GOAL_MODEL = "MiniMax-M1-80k";
+    process.env.OPENAI_BASE_URL = "https://api.minimaxi.com/v1";
+    chatCompletionsCreate.mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              candidates: [
+                {
+                  name: "Perplexity",
+                  officialUrl: "https://www.perplexity.ai",
+                  strengthDimensions: ["usability"],
+                  sources: [
+                    {
+                      sourceType: "official_site",
+                      url: "https://www.perplexity.ai"
+                    }
+                  ]
+                }
+              ]
+            })
+          }
+        }
+      ]
+    });
+
+    const candidates = await generateCandidateDrafts(buildInput());
+
+    expect(chatCompletionsCreate).toHaveBeenCalledOnce();
+    expect(responsesCreate).not.toHaveBeenCalled();
+    expect(candidates[0]?.name).toBe("Perplexity");
+  });
+
   it("preserves kimi reasoning content across tool calls", async () => {
     process.env.OPENAI_GOAL_MODEL = "kimi-k2.5";
     process.env.OPENAI_BASE_URL = "https://api.moonshot.cn/v1";

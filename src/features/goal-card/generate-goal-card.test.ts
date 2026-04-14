@@ -81,6 +81,35 @@ describe("generateGoalCard", () => {
     expect(goalCard.name).toBe("Kimi GoalCard");
   });
 
+  it("uses chat completions directly for minimax models", async () => {
+    process.env.OPENAI_GOAL_MODEL = "MiniMax-M1-80k";
+    process.env.OPENAI_BASE_URL = "https://api.minimaxi.com/v1";
+    chatCompletionsCreate.mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              name: "MiniMax GoalCard",
+              category: "AI Product Tool",
+              jobToBeDone: "Turn a user goal into an explainable analysis run.",
+              hardConstraints: ["Open source"],
+              softPreferences: ["Evidence first"],
+              currentStage: "validation"
+            })
+          }
+        }
+      ]
+    });
+
+    const goalCard = await generateGoalCard({
+      inputText: "Turn a user goal into an explainable analysis run."
+    });
+
+    expect(chatCompletionsCreate).toHaveBeenCalledOnce();
+    expect(responsesCreate).not.toHaveBeenCalled();
+    expect(goalCard.name).toBe("MiniMax GoalCard");
+  });
+
   it("falls back to chat completions when responses endpoint returns 404", async () => {
     responsesCreate.mockRejectedValue(
       Object.assign(new Error("404 The requested resource was not found"), {

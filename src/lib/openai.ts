@@ -4,7 +4,12 @@ declare global {
   var __targetIntelligenceOpenAI: OpenAI | undefined;
 }
 
-export type OpenAIProvider = "openai" | "moonshot" | "dashscope" | "compatible";
+export type OpenAIProvider =
+  | "openai"
+  | "moonshot"
+  | "dashscope"
+  | "minimax"
+  | "compatible";
 
 type ProviderDetectionInput = {
   baseURL?: string | null;
@@ -72,6 +77,13 @@ export function detectOpenAIProvider({
     return "dashscope";
   }
 
+  if (
+    normalizedBaseURL.includes("minimaxi.com") ||
+    normalizedModel.includes("minimax")
+  ) {
+    return "minimax";
+  }
+
   if (!normalizedBaseURL || normalizedBaseURL.includes("openai.com")) {
     return "openai";
   }
@@ -87,7 +99,9 @@ export function getOpenAIProvider(model?: string) {
 }
 
 export function shouldUseChatCompletionsForStructuredJson(model?: string) {
-  return getOpenAIProvider(model) === "moonshot";
+  const provider = getOpenAIProvider(model);
+
+  return provider === "moonshot" || provider === "minimax";
 }
 
 export function supportsResponsesWebSearch(model?: string) {
